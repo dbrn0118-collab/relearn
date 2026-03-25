@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리런하다 국어 · 상담 CRM v6</title>
+<title>리런하다 국어 · 상담 CRM v11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Supabase JS SDK (CDN) -->
@@ -325,6 +325,8 @@ button,input,select,textarea{font-family:inherit}
 /* ── Print ── */
 @media print{
   .sidebar,.top-header,.filter-bar,.page-header,.tab-bar,.btn,.data-toolbar,.sync-bar{display:none!important}
+  /* 리포트 페이지의 학생 선택 카드 숨기기 */
+  #page-report > .card:first-of-type{display:none!important}
   .main-container{margin-left:0}
   body{background:white}
   .report-shell{box-shadow:none;border:none}
@@ -581,10 +583,10 @@ button,input,select,textarea{font-family:inherit}
           <div class="form-tabs" id="counselingFormTabs">
             <button type="button" class="form-tab active" data-tab="cf-basic" onclick="UI.switchTab(this,'counselingFormTabs')">① 필수 정보</button>
             <button type="button" class="form-tab" data-tab="cf-diag" onclick="UI.switchTab(this,'counselingFormTabs')">② 진단 정보</button>
-            <button type="button" class="form-tab" data-tab="cf-memo" onclick="UI.switchTab(this,'counselingFormTabs')">③ 상담 메모</button>
+            <button type="button" class="form-tab" data-tab="cf-memo" onclick="UI.switchTab(this,'counselingFormTabs')">③ 메모·상세</button>
           </div>
 
-          <!-- ① 필수 정보 -->
+          <!-- ① 필수 정보 (상담 중 5분 안에 채울 수 있는 핵심만) -->
           <div class="form-tab-content active" id="cf-basic">
 
             <div class="form-card"><div class="form-section-head">상담 기본 정보</div>
@@ -615,7 +617,7 @@ button,input,select,textarea{font-family:inherit}
               </div>
             </div>
 
-            <div class="form-card"><div class="form-section-head">학습 환경 및 생활 패턴</div>
+            <div class="form-card"><div class="form-section-head">학습 환경</div>
               <div class="form-body grid-3">
                 <div class="fg"><label>주 학습 공간</label>
                   <select id="cf_studyPlace"><option value="">선택</option><option>자택</option><option>독서실</option><option>카페·공공장소</option><option>도서관</option><option>학원 자습실</option><option>기타</option></select>
@@ -637,16 +639,6 @@ button,input,select,textarea{font-family:inherit}
                     <option value="sp_addict">중독 수준 — 일상생활 지장</option>
                   </select>
                 </div>
-                <div class="fg"><label>기상 시간</label><input id="cf_wakeTime" type="text" placeholder="오전 7시"></div>
-                <div class="fg"><label>취침 시간</label><input id="cf_sleepTime" type="text" placeholder="오전 1시"></div>
-                <div class="fg"><label>독서량 (월 기준)</label>
-                  <select id="cf_reading"><option value="">선택</option>
-                    <option value="rd_none">전혀 읽지 않음</option>
-                    <option value="rd_rare">월 1권 미만 — 간헐적</option>
-                    <option value="rd_moderate">월 1~2권 — 보통</option>
-                    <option value="rd_habit">월 3권 이상 — 습관화</option>
-                  </select>
-                </div>
               </div>
               <div class="grid-2" style="margin-top:14px">
                 <div class="fg"><label>전반적 학습 동기 <span class="range-val-inline" id="rv_si">3</span>/5</label><input id="cf_studyInterest" type="range" min="1" max="5" value="3" oninput="document.getElementById('rv_si').textContent=this.value"></div>
@@ -654,66 +646,10 @@ button,input,select,textarea{font-family:inherit}
               </div>
             </div>
 
-            <div class="form-card"><div class="form-section-head">국어 학습 방식 진단</div>
-              <div class="form-body grid-2">
-
-                <div class="fg"><label>문제 풀이 전략</label>
-                  <select id="cf_problemStyle" onchange="CounselingsUI.toggleEtc(this,'cf_problemStyle_etc')">
-                    <option value="">선택</option>
-                    <option>독립 풀이형 — 스스로 풀고 채점 후 해설 확인</option>
-                    <option>해설 의존형 — 막히면 바로 해설 참조</option>
-                    <option>강사 주도형 — 강사 설명 후 따라 풀기</option>
-                    <option>미수행형 — 문제풀이 거의 안 함</option>
-                    <option value="기타">기타 (직접 입력)</option>
-                  </select>
-                  <input type="text" id="cf_problemStyle_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
-                </div>
-
-                <div class="fg"><label>독해 접근 방식</label>
-                  <select id="cf_readingMethod" onchange="CounselingsUI.toggleEtc(this,'cf_readingMethod_etc')">
-                    <option value="">선택</option>
-                    <option>속독형 — 전체 흐름 빠르게 파악 후 문항 대조</option>
-                    <option>정독형 — 문장 단위 꼼꼼히 읽기</option>
-                    <option>구조분석형 — 문단별 핵심 요약 후 풀이</option>
-                    <option>문항선행형 — 문항 먼저 확인 후 지문 독해</option>
-                    <option>무전략형 — 일정한 방식 없이 읽기</option>
-                    <option value="기타">기타 (직접 입력)</option>
-                  </select>
-                  <input type="text" id="cf_readingMethod_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
-                </div>
-
-                <div class="fg"><label>유형·개념 암기 방식</label>
-                  <select id="cf_typeMemorize" onchange="CounselingsUI.toggleEtc(this,'cf_typeMemorize_etc')">
-                    <option value="">선택</option>
-                    <option>체계적 암기 — 유형 분류 후 반복 정리</option>
-                    <option>노출 의존형 — 반복 풀이로 자연스럽게 체득</option>
-                    <option>단편 암기형 — 내용은 외우나 적용 어려움</option>
-                    <option>암기 미수행 — 개념 정리 거의 안 함</option>
-                    <option value="기타">기타 (직접 입력)</option>
-                  </select>
-                  <input type="text" id="cf_typeMemorize_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
-                </div>
-
-                <div class="fg"><label>시험 대비 학습 패턴</label>
-                  <select id="cf_bookActivity" onchange="CounselingsUI.toggleEtc(this,'cf_bookActivity_etc')">
-                    <option value="">선택</option>
-                    <option value="ba_spaced">분산 학습형 — 평소 예습·복습 및 주기적 회독</option>
-                    <option value="ba_immediate">수업 직후 정리형 — 수업 후 즉시 요약·복습</option>
-                    <option value="ba_pretest">시험 전 집중형 — 시험 1~2주 전 집중 학습</option>
-                    <option value="ba_cram">벼락치기형 — 시험 직전 단기 암기</option>
-                    <option value="ba_none">무계획형 — 별도 시험 대비 없음</option>
-                    <option value="기타">기타 (직접 입력)</option>
-                  </select>
-                  <input type="text" id="cf_bookActivity_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
-                </div>
-
-              </div>
-            </div>
-
             <div class="form-card"><div class="form-section-head">학부모 인식 및 상담 목표</div>
               <div class="form-body grid-2">
-                <div class="fg"><label>학생의 강점 (학부모 관점)</label><textarea id="cf_strength" placeholder="예) 성실하고 꾸준함, 수학은 우수"></textarea></div>
-                <div class="fg"><label>학생의 약점 (학부모 관점)</label><textarea id="cf_weakness" placeholder="예) 집중력 부족, 국어 어휘력 취약"></textarea></div>
+                <div class="fg"><label>학생의 강점 (보호자 관점)</label><textarea id="cf_strength" placeholder="예) 성실하고 꾸준함, 수학은 우수"></textarea></div>
+                <div class="fg"><label>학생의 약점 (보호자 관점)</label><textarea id="cf_weakness" placeholder="예) 집중력 부족, 국어 어휘력 취약"></textarea></div>
                 <div class="fg" style="grid-column:1/-1"><label>가장 시급하게 해결하고 싶은 문제</label><textarea id="cf_concern" placeholder="예) 모의고사 4등급에서 2등급 이상으로 올리고 싶다"></textarea></div>
                 <div class="fg" style="grid-column:1/-1">
                   <label>상담 및 지도 목표 <span style="font-size:.72rem;color:var(--text-4);font-weight:400">(복수 선택 가능)</span></label>
@@ -739,7 +675,7 @@ button,input,select,textarea{font-family:inherit}
             <div class="form-card"><div class="form-section-head">독해 역량 진단</div>
               <div class="form-body grid-2">
                 <div class="fg"><label>독해 티어 (역량 수준)</label>
-                  <select id="cf_tier">
+                  <select id="cf_tier" onchange="CounselingsUI.updateRecommend()">
                     <option value="">선택</option>
                     <option value="T1">T1 — 입문 · 기초 어휘·문장 이해 단계</option>
                     <option value="T2">T2 — 기초 · 단순 사실 확인 가능, 추론 미흡</option>
@@ -749,7 +685,7 @@ button,input,select,textarea{font-family:inherit}
                   </select>
                 </div>
                 <div class="fg"><label>학습자 유형 (공부 패턴)</label>
-                  <select id="cf_studyType">
+                  <select id="cf_studyType" onchange="CounselingsUI.updateRecommend()">
                     <option value="">선택</option>
                     <option value="st_explore">방향 탐색형 — 실력은 있으나 학습 전략 미확립</option>
                     <option value="st_effort">성실 노력형 — 투입 시간은 많으나 방법론 교정 필요</option>
@@ -779,12 +715,12 @@ button,input,select,textarea{font-family:inherit}
 
             <div class="form-card"><div class="form-section-head">주요 결손 영역 (복수 선택)</div>
               <div class="form-body"><div class="deficit-grid">
-                <label class="deficit-item"><input type="checkbox" id="d_vocab"><span><strong>어휘·배경지식</strong><small>핵심 어휘 의미 파악 불가, 배경지식 부족</small></span></label>
-                <label class="deficit-item"><input type="checkbox" id="d_sentence"><span><strong>문장·구문 해석</strong><small>복합문·함축적 표현 이해 부족</small></span></label>
-                <label class="deficit-item"><input type="checkbox" id="d_structure"><span><strong>텍스트 구조 파악</strong><small>전개 방식·논리 흐름 파악 불가</small></span></label>
-                <label class="deficit-item"><input type="checkbox" id="d_connect"><span><strong>정보 통합·연결</strong><small>문단 간 논리 연결, 핵심 정보 선별 부족</small></span></label>
-                <label class="deficit-item"><input type="checkbox" id="d_infer"><span><strong>추론적 독해</strong><small>함의·전제·맥락 추론 불가</small></span></label>
-                <label class="deficit-item"><input type="checkbox" id="d_critical"><span><strong>비판적 사고</strong><small>관점 평가, 논거 타당성 판단 부족</small></span></label>
+                <label class="deficit-item"><input type="checkbox" id="d_vocab" onchange="CounselingsUI.updateRecommend()"><span><strong>어휘·배경지식</strong><small>핵심 어휘 의미 파악 불가, 배경지식 부족</small></span></label>
+                <label class="deficit-item"><input type="checkbox" id="d_sentence" onchange="CounselingsUI.updateRecommend()"><span><strong>문장·구문 해석</strong><small>복합문·함축적 표현 이해 부족</small></span></label>
+                <label class="deficit-item"><input type="checkbox" id="d_structure" onchange="CounselingsUI.updateRecommend()"><span><strong>텍스트 구조 파악</strong><small>전개 방식·논리 흐름 파악 불가</small></span></label>
+                <label class="deficit-item"><input type="checkbox" id="d_connect" onchange="CounselingsUI.updateRecommend()"><span><strong>정보 통합·연결</strong><small>문단 간 논리 연결, 핵심 정보 선별 부족</small></span></label>
+                <label class="deficit-item"><input type="checkbox" id="d_infer" onchange="CounselingsUI.updateRecommend()"><span><strong>추론적 독해</strong><small>함의·전제·맥락 추론 불가</small></span></label>
+                <label class="deficit-item"><input type="checkbox" id="d_critical" onchange="CounselingsUI.updateRecommend()"><span><strong>비판적 사고</strong><small>관점 평가, 논거 타당성 판단 부족</small></span></label>
               </div></div>
             </div>
 
@@ -810,10 +746,20 @@ button,input,select,textarea{font-family:inherit}
               <div class="form-body"><div class="fg"><label>강사 진단 소견</label><textarea id="cf_diagComment" style="min-height:90px" placeholder="독해 역량, 학습 태도, 우선 지도 방향에 대한 종합 의견"></textarea></div></div>
             </div>
 
+            <!-- ★ 리런 추천 수업 구조 자동 미리보기 ★ -->
+            <div class="form-card" id="rlhd_recommend_card" style="display:none">
+              <div class="form-section-head" style="background:var(--navy);display:flex;align-items:center;justify-content:space-between">
+                <span>리런 추천 수업 구조</span>
+                <span style="font-size:.72rem;font-weight:400;opacity:.6">티어·학습자 유형 선택 시 자동 생성</span>
+              </div>
+              <div class="form-body" id="rlhd_recommend_body"></div>
+            </div>
+
           </div>
 
-          <!-- ③ 상담 메모 -->
+          <!-- ③ 상담 메모 + 상세 데이터 -->
           <div class="form-tab-content" id="cf-memo">
+
             <div class="form-card"><div class="form-section-head" style="background:var(--accent)">상담 핵심 메모 (관찰 → 해석 → 지도방향)</div>
               <div class="form-body grid-2">
                 <div class="fg"><label>관찰 — 상담 중 학생·학부모 반응 및 특이사항</label><textarea id="cf_memoObserve" style="min-height:100px" placeholder="태도, 표정, 발언, 학부모 반응 등 관찰 내용"></textarea></div>
@@ -823,6 +769,96 @@ button,input,select,textarea{font-family:inherit}
                 <div class="fg" style="grid-column:1/-1"><label>기타 특이사항</label><textarea id="cf_extra" placeholder="가정환경, 건강 이슈, 특별 요청사항 등"></textarea></div>
               </div>
             </div>
+
+            <div class="form-card"><div class="form-section-head">생활 패턴 상세 (상담 후 기록)</div>
+              <div class="form-body grid-3">
+                <div class="fg"><label>기상 시간</label><input id="cf_wakeTime" type="text" placeholder="오전 7시"></div>
+                <div class="fg"><label>취침 시간</label><input id="cf_sleepTime" type="text" placeholder="오전 1시"></div>
+                <div class="fg"><label>독서량 (월 기준)</label>
+                  <select id="cf_reading"><option value="">선택</option>
+                    <option value="rd_none">전혀 읽지 않음</option>
+                    <option value="rd_rare">월 1권 미만 — 간헐적</option>
+                    <option value="rd_moderate">월 1~2권 — 보통</option>
+                    <option value="rd_habit">월 3권 이상 — 습관화</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-card"><div class="form-section-head">국어 학습 방식 상세 (상담 후 기록)</div>
+              <div class="form-body grid-2">
+                <div class="fg"><label>문제 풀이 전략</label>
+                  <select id="cf_problemStyle" onchange="CounselingsUI.toggleEtc(this,'cf_problemStyle_etc')">
+                    <option value="">선택</option>
+                    <option>독립 풀이형 — 스스로 풀고 채점 후 해설 확인</option>
+                    <option>해설 의존형 — 막히면 바로 해설 참조</option>
+                    <option>강사 주도형 — 강사 설명 후 따라 풀기</option>
+                    <option>미수행형 — 문제풀이 거의 안 함</option>
+                    <option value="기타">기타 (직접 입력)</option>
+                  </select>
+                  <input type="text" id="cf_problemStyle_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
+                </div>
+                <div class="fg"><label>독해 접근 방식</label>
+                  <select id="cf_readingMethod" onchange="CounselingsUI.toggleEtc(this,'cf_readingMethod_etc')">
+                    <option value="">선택</option>
+                    <option>속독형 — 전체 흐름 빠르게 파악 후 문항 대조</option>
+                    <option>정독형 — 문장 단위 꼼꼼히 읽기</option>
+                    <option>구조분석형 — 문단별 핵심 요약 후 풀이</option>
+                    <option>문항선행형 — 문항 먼저 확인 후 지문 독해</option>
+                    <option>무전략형 — 일정한 방식 없이 읽기</option>
+                    <option value="기타">기타 (직접 입력)</option>
+                  </select>
+                  <input type="text" id="cf_readingMethod_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
+                </div>
+                <div class="fg"><label>유형·개념 암기 방식</label>
+                  <select id="cf_typeMemorize" onchange="CounselingsUI.toggleEtc(this,'cf_typeMemorize_etc')">
+                    <option value="">선택</option>
+                    <option>체계적 암기 — 유형 분류 후 반복 정리</option>
+                    <option>노출 의존형 — 반복 풀이로 자연스럽게 체득</option>
+                    <option>단편 암기형 — 내용은 외우나 적용 어려움</option>
+                    <option>암기 미수행 — 개념 정리 거의 안 함</option>
+                    <option value="기타">기타 (직접 입력)</option>
+                  </select>
+                  <input type="text" id="cf_typeMemorize_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
+                </div>
+                <div class="fg"><label>시험 대비 학습 패턴</label>
+                  <select id="cf_bookActivity" onchange="CounselingsUI.toggleEtc(this,'cf_bookActivity_etc')">
+                    <option value="">선택</option>
+                    <option value="ba_spaced">분산 학습형 — 평소 예습·복습 및 주기적 회독</option>
+                    <option value="ba_immediate">수업 직후 정리형 — 수업 후 즉시 요약·복습</option>
+                    <option value="ba_pretest">시험 전 집중형 — 시험 1~2주 전 집중 학습</option>
+                    <option value="ba_cram">벼락치기형 — 시험 직전 단기 암기</option>
+                    <option value="ba_none">무계획형 — 별도 시험 대비 없음</option>
+                    <option value="기타">기타 (직접 입력)</option>
+                  </select>
+                  <input type="text" id="cf_bookActivity_etc" placeholder="직접 입력" style="display:none;margin-top:6px">
+                </div>
+              </div>
+            </div>
+
+            <!-- ★ 리런 전환 설계 섹션 ★ -->
+            <div class="form-card"><div class="form-section-head" style="background:var(--navy)">리런 전환 설계</div>
+              <div class="form-body">
+                <div class="grid-2" style="margin-bottom:14px">
+                  <div class="fg"><label>원데이클래스 제안 여부</label>
+                    <select id="cf_onedaySuggest">
+                      <option value="">선택</option>
+                      <option value="suggested_accepted">제안함 — 수락</option>
+                      <option value="suggested_pending">제안함 — 검토 중</option>
+                      <option value="suggested_declined">제안함 — 거절</option>
+                      <option value="not_suggested">미제안</option>
+                    </select>
+                  </div>
+                  <div class="fg"><label>원데이클래스 예정일</label>
+                    <input id="cf_onedayDate" type="date">
+                  </div>
+                </div>
+                <div class="fg"><label>원데이클래스 제안 메모</label>
+                  <textarea id="cf_onedayNote" placeholder="제안 내용, 반응, 특이사항 등" style="min-height:60px"></textarea>
+                </div>
+              </div>
+            </div>
+
           </div>
 
         </form>
@@ -882,7 +918,7 @@ button,input,select,textarea{font-family:inherit}
         <div class="fu-hist-header" style="margin-bottom:10px">연락 내용 입력</div>
         <div class="fu-modal-grid">
           <div class="fg"><label>연락 실시 일자</label><input id="fu_dueDate" type="date"></div>
-          <div class="fg"><label>연락 유형 <span class="req">*</span></label><select id="fu_actionType"><option value="">선택</option><option>전화 연락</option><option>문자 발송</option><option>카카오톡</option><option>방문 상담</option><option>이메일</option><option>기타</option></select><span class="field-error-msg" id="err_fu_actionType"></span></div>
+          <div class="fg"><label>연락 유형 <span class="req">*</span></label><select id="fu_actionType"><option value="">선택</option><option>전화 연락</option><option>문자 발송</option><option>카카오톡</option><option>방문 상담</option><option>원데이클래스 제안</option><option>이메일</option><option>기타</option></select><span class="field-error-msg" id="err_fu_actionType"></span></div>
           <div class="fg"><label>연락 결과 <span class="req">*</span></label><select id="fu_result"><option value="">선택</option><option>연결됨·긍정적</option><option>연결됨·부정적</option><option>연결됨·보류</option><option>부재중</option><option>문자만 발송</option><option>미응답</option><option>취소</option></select><span class="field-error-msg" id="err_fu_result"></span></div>
           <div class="fg"><label>담당자</label><input id="fu_manager" type="text" placeholder="강사명"></div>
         </div>
@@ -896,6 +932,35 @@ button,input,select,textarea{font-family:inherit}
         </div>
       </div>
       <div><div class="fu-hist-header">이전 후속 연락 이력</div><div id="fuModalHistory"></div></div>
+
+      <!-- 리런관리 데이터 (등록 학생 매주 기록) -->
+      <div id="fu_mgmtSection" style="margin-top:14px;display:none">
+        <div class="fu-hist-header" style="margin-bottom:10px;color:var(--blue)">리런관리 데이터 (이번 주)</div>
+        <div class="fu-modal-grid" style="margin-bottom:8px">
+          <div class="fg">
+            <label style="text-transform:none;letter-spacing:0;font-size:.78rem;font-weight:700;color:var(--text-2)">집중 유지 시간 (분)</label>
+            <input id="fu_focusMin" type="number" placeholder="예) 40" min="0" max="120">
+          </div>
+          <div class="fg">
+            <label style="text-transform:none;letter-spacing:0;font-size:.78rem;font-weight:700;color:var(--text-2)">과제 수행률 (%)</label>
+            <input id="fu_taskRate" type="number" placeholder="예) 80" min="0" max="100">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:8px">
+          <label style="text-transform:none;letter-spacing:0;font-size:.78rem;font-weight:700;color:var(--text-2)">루틴 유지율</label>
+          <select id="fu_routineRate">
+            <option value="">선택</option>
+            <option value="high">잘 유지됨 — 약속한 루틴 대부분 실행</option>
+            <option value="mid">보통 — 절반 이상 실행, 간헐적 이탈</option>
+            <option value="low">흔들림 — 루틴 이탈 빈번, 재설계 필요</option>
+            <option value="none">미실행 — 루틴 사실상 중단 상태</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label style="text-transform:none;letter-spacing:0;font-size:.78rem;font-weight:700;color:var(--text-2)">이번 주 관찰 메모</label>
+          <textarea id="fu_mgmtNote" style="min-height:56px" placeholder="변화 양상, 특이사항, 개입 내용 등"></textarea>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="UI.closeModal('followupModal')">취소</button>
@@ -1713,6 +1778,7 @@ const CounselingStore = {
       deficits:data.deficits||[],wrongCause:data.wrongCause||'',wrongPattern:data.wrongPattern||'',
       diagComment:data.diagComment||'',memoObserve:data.memoObserve||'',memoProblem:data.memoProblem||'',
       memoDirection:data.memoDirection||'',memoProcess:data.memoProcess||'',extra:data.extra||'',
+      onedaySuggest:data.onedaySuggest||'',onedayDate:data.onedayDate||'',onedayNote:data.onedayNote||'',
     };
     await SupabaseAdapter.insert('counselings', id, payload);
     return id;
@@ -1757,6 +1823,8 @@ const FollowupStore = {
       actionType:data.actionType||'',result:data.result||'',
       resultNote:data.resultNote||'',nextDueDate:data.nextDueDate||'',
       nextStatus:data.nextStatus||'',manager:data.manager||'',
+      focusMin:data.focusMin||'',taskRate:data.taskRate||'',
+      routineRate:data.routineRate||'',mgmtNote:data.mgmtNote||'',
     };
     await SupabaseAdapter.insert('followups', id, payload);
     StudentStore._syncNextDueCache(data.studentId);
@@ -1846,7 +1914,21 @@ const UI = (() => {
   function toastWarnings(ws=[]){ws.forEach((w,i)=>setTimeout(()=>toast(w,'warn'),i*350));}
   function showFieldError(fieldId,msg){const el=document.getElementById(fieldId);if(el){el.classList.add('input-error');el.focus();}const em=document.getElementById('err_'+fieldId);if(em){em.textContent=msg;em.classList.add('show');}}
   function clearFieldErrors(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('input-error');const em=document.getElementById('err_'+id);if(em){em.textContent='';em.classList.remove('show');}});}
-  const confirm_=msg=>window.confirm(msg);
+  // 커스텀 확인 다이얼로그 — Promise 기반 (비동기 대기)
+  function confirm_(msg){
+    return new Promise(resolve=>{
+      const ov=document.createElement('div');
+      ov.style.cssText='position:fixed;inset:0;background:rgba(10,20,40,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)';
+      const box=document.createElement('div');
+      box.style.cssText='background:#fff;border-radius:12px;padding:24px 26px;max-width:380px;width:100%;box-shadow:0 8px 40px rgba(15,39,68,.2);font-family:inherit';
+      box.innerHTML=`<p style="font-size:.9rem;line-height:1.75;color:var(--text);margin-bottom:20px;white-space:pre-line">${msg}</p><div style="display:flex;justify-content:flex-end;gap:8px"><button class="_cd_cancel" style="padding:8px 18px;border:1.5px solid var(--border);background:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text-2);font-family:inherit">취소</button><button class="_cd_ok" style="padding:8px 18px;background:var(--navy);color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:700;font-family:inherit">확인</button></div>`;
+      ov.appendChild(box);document.body.appendChild(ov);
+      const finish=r=>{document.body.removeChild(ov);resolve(r);};
+      box.querySelector('._cd_ok').onclick=()=>finish(true);
+      box.querySelector('._cd_cancel').onclick=()=>finish(false);
+      ov.onclick=e=>{if(e.target===ov)finish(false);};
+    });
+  }
   return {STATUS_COLOR,TIER_STYLE,DEFICIT_LABEL,e,fmtDate,daysDiff,statusBadge,tierBadge,deficitTags,enrolledBadge,emptyState,emptyStateDiv,v,cb,sv,scb,innerText,innerHTML,switchTab,resetTabs,openModal,closeModal,toggleSidebar,toast,toastWarnings,showFieldError,clearFieldErrors,confirm_};
 })();
 
@@ -1930,7 +2012,7 @@ const StudentsUI = (() => {
   function editCurrent(){openEdit(AppState.studentId);}
   async function deleteCurrent(){
     const id=AppState.studentId;const s=StudentStore.byId(id);if(!s)return;
-    if(!UI.confirm_(`${s.name} 학생의 모든 데이터를 삭제하시겠습니까?`))return;
+    if(!await UI.confirm_(`${s.name} 학생의 모든 데이터를 삭제하시겠습니까?`))return;
     Loading.show('삭제 중...');await StudentStore.delete(id);Loading.hide();
     UI.toast(`${s.name} 학생이 삭제되었습니다.`,'success');App.nav('students');
   }
@@ -1967,9 +2049,9 @@ const CounselingsUI = (() => {
     else { etc.style.display='none'; etc.value=''; }
   }
   function openNewForCurrent(){const sid=AppState.studentId;if(sid)openNew(sid,true);else openNew(null,false);}
-  function openNew(sid,ret=false){_returnSid=ret?sid:null;AppState.setCounselingId(null);_resetForm();populateStudentSelect(sid);if(sid){UI.sv('cf_studentSelect',sid);const s=StudentStore.byId(sid);if(s?.manager)UI.sv('cf_counselor',s.manager);UI.innerText('counselingFormTitle',`${s?.name||''} 학생 상담 기록 입력`);}else UI.innerText('counselingFormTitle','상담 기록 입력');App.nav('newCounseling');}
+  function openNew(sid,ret=false){_returnSid=ret?sid:null;AppState.setCounselingId(null);_resetForm();populateStudentSelect(sid);if(sid){UI.sv('cf_studentSelect',sid);const s=StudentStore.byId(sid);if(s?.manager)UI.sv('cf_counselor',s.manager);UI.innerText('counselingFormTitle',`${s?.name||''} 학생 상담 기록 입력`);}else UI.innerText('counselingFormTitle','상담 기록 입력');App.nav('newCounseling');if(sid)UI.sv('cf_studentSelect',sid);}
   function openEdit(id){const c=CounselingStore.byId(id);if(!c)return;AppState.setCounselingId(id);_returnSid=null;_resetForm();populateStudentSelect(c.studentId);UI.innerText('counselingFormTitle','상담 기록 수정');
-    ['type','date','counselor','duration','schoolScore','mockScore','targetScore','studyHours','hobbyHours','academyCount','studyPlace','reading','studyMgmt','smartphone','wakeTime','sleepTime','problemStyle','typeMemorize','readingMethod','bookActivity','strength','weakness','concern','otherGoal','tier','studyType','parentType','wrongCause','wrongPattern','diagComment','memoObserve','memoProblem','memoDirection','memoProcess','extra'].forEach(f=>UI.sv('cf_'+f,c[f]??''));
+    ['type','date','counselor','duration','schoolScore','mockScore','targetScore','studyHours','hobbyHours','academyCount','studyPlace','reading','studyMgmt','smartphone','wakeTime','sleepTime','problemStyle','typeMemorize','readingMethod','bookActivity','strength','weakness','concern','otherGoal','tier','studyType','parentType','wrongCause','wrongPattern','diagComment','memoObserve','memoProblem','memoDirection','memoProcess','extra','onedaySuggest','onedayDate','onedayNote'].forEach(f=>UI.sv('cf_'+f,c[f]??''));
     UI.sv('cf_studentSelect',c.studentId);UI.sv('cf_studyInterest',c.studyInterest||'3');UI.sv('cf_koreanInterest',c.koreanInterest||'3');
     UI.innerText('rv_si',c.studyInterest||'3');UI.innerText('rv_ki',c.koreanInterest||'3');
     ['score','reading','habit','self'].forEach(k=>UI.scb('cg_'+k,c['goal'+k.charAt(0).toUpperCase()+k.slice(1)]));
@@ -1980,7 +2062,6 @@ const CounselingsUI = (() => {
       const etcEl = document.getElementById('cf_'+f+'_etc');
       const selEl = document.getElementById('cf_'+f);
       if (!etcEl || !selEl) return;
-      // 저장된 값이 select 옵션에 없으면 기타로 처리
       const opts = [...selEl.options].map(o=>o.value).filter(Boolean);
       if (val && !opts.includes(val) && val !== '기타') {
         selEl.value = '기타'; etcEl.style.display='block'; etcEl.value=val;
@@ -1993,18 +2074,48 @@ const CounselingsUI = (() => {
       if (chk) chk.checked = true;
       if (wrap) wrap.style.display = 'block';
     }
-    UI.closeModal('counselingViewModal');App.nav('newCounseling');}
+    // 복원 후 추천 카드 갱신
+    setTimeout(()=>updateRecommend(), 50);
+    UI.closeModal('counselingViewModal');
+    App.nav('newCounseling');
+    // App.nav 내부에서 populateStudentSelect()가 재호출되어 cf_studentSelect 값이 초기화됨 — 재복원
+    UI.sv('cf_studentSelect', c.studentId);
+  }
   function _resetForm(){
-    document.getElementById('counselingForm')?.reset();
-    UI.sv('cf_date',_today());UI.sv('cf_studyInterest','3');UI.sv('cf_koreanInterest','3');
-    UI.innerText('rv_si','3');UI.innerText('rv_ki','3');
+    // form.reset()은 탭 전환 후 입력값까지 날리므로 사용 금지 — 필드 개별 초기화
+    const ids=[
+      'cf_studentSelect','cf_type','cf_date','cf_counselor','cf_duration',
+      'cf_schoolScore','cf_mockScore','cf_targetScore','cf_studyHours','cf_hobbyHours','cf_academyCount',
+      'cf_studyPlace','cf_studyMgmt','cf_smartphone',
+      'cf_studyInterest','cf_koreanInterest',
+      'cf_strength','cf_weakness','cf_concern','cf_otherGoal',
+      'cf_tier','cf_studyType','cf_parentType',
+      'cf_wrongCause','cf_wrongPattern','cf_diagComment',
+      'cf_memoObserve','cf_memoProblem','cf_memoDirection','cf_memoProcess','cf_extra',
+      'cf_wakeTime','cf_sleepTime','cf_reading',
+      'cf_problemStyle','cf_readingMethod','cf_typeMemorize','cf_bookActivity',
+      'cf_onedaySuggest','cf_onedayDate','cf_onedayNote',
+    ];
+    ids.forEach(id=>{ const el=document.getElementById(id); if(!el) return; if(el.type==='checkbox'){el.checked=false;}else{el.value='';} });
+    // 슬라이더 + 레이블 초기화
+    UI.sv('cf_studyInterest','3'); UI.sv('cf_koreanInterest','3');
+    UI.innerText('rv_si','3'); UI.innerText('rv_ki','3');
+    // 날짜 기본값
+    UI.sv('cf_date',_today());
+    // 상담 유형 기본값 복원 (첫 번째 옵션)
+    const typeEl=document.getElementById('cf_type'); if(typeEl) typeEl.selectedIndex=0;
+    // 체크박스 초기화
+    ['cg_score','cg_reading','cg_habit','cg_self','cg_etc_check'].forEach(id=>{ const el=document.getElementById(id); if(el) el.checked=false; });
+    ['vocab','sentence','structure','connect','infer','critical'].forEach(k=>{ const el=document.getElementById('d_'+k); if(el) el.checked=false; });
     // 기타 직접입력 필드 숨기기
     ['problemStyle','readingMethod','typeMemorize','bookActivity'].forEach(f=>{
       const el=document.getElementById('cf_'+f+'_etc'); if(el){el.style.display='none';el.value='';}
     });
-    // 기타 목표 초기화
+    // 기타 목표 wrap 숨기기
     const cw=document.getElementById('cg_etc_wrap'); if(cw) cw.style.display='none';
-    UI.clearFieldErrors(_CE);UI.resetTabs('counselingFormTabs');
+    // 추천 카드 숨기기
+    const rc=document.getElementById('rlhd_recommend_card'); if(rc) rc.style.display='none';
+    UI.clearFieldErrors(_CE); UI.resetTabs('counselingFormTabs');
   }
 
   async function save(){
@@ -2018,11 +2129,21 @@ const CounselingsUI = (() => {
       const v = UI.v(selId); const ev = UI.v(etcId);
       return v === '기타' ? (ev || '기타') : v;
     };
-    const data={studentId:sid,type:UI.v('cf_type'),date,counselor:UI.v('cf_counselor'),duration:UI.v('cf_duration'),schoolScore:UI.v('cf_schoolScore'),mockScore:UI.v('cf_mockScore'),targetScore:UI.v('cf_targetScore'),studyHours:UI.v('cf_studyHours'),hobbyHours:UI.v('cf_hobbyHours'),academyCount:UI.v('cf_academyCount'),studyPlace:UI.v('cf_studyPlace'),reading:UI.v('cf_reading'),studyMgmt:UI.v('cf_studyMgmt'),smartphone:UI.v('cf_smartphone'),wakeTime:UI.v('cf_wakeTime'),sleepTime:UI.v('cf_sleepTime'),studyInterest:UI.v('cf_studyInterest'),koreanInterest:UI.v('cf_koreanInterest'),problemStyle:_etcVal('cf_problemStyle','cf_problemStyle_etc'),typeMemorize:_etcVal('cf_typeMemorize','cf_typeMemorize_etc'),readingMethod:_etcVal('cf_readingMethod','cf_readingMethod_etc'),bookActivity:_etcVal('cf_bookActivity','cf_bookActivity_etc'),strength:UI.v('cf_strength'),weakness:UI.v('cf_weakness'),concern:UI.v('cf_concern'),goalScore:UI.cb('cg_score'),goalReading:UI.cb('cg_reading'),goalHabit:UI.cb('cg_habit'),goalSelf:UI.cb('cg_self'),otherGoal:UI.cb('cg_etc_check')?UI.v('cf_otherGoal'):'',tier:UI.v('cf_tier'),studyType:UI.v('cf_studyType'),parentType:UI.v('cf_parentType'),deficits:['vocab','sentence','structure','connect','infer','critical'].filter(k=>UI.cb('d_'+k)),wrongCause:UI.v('cf_wrongCause'),wrongPattern:UI.v('cf_wrongPattern'),diagComment:UI.v('cf_diagComment'),memoObserve:UI.v('cf_memoObserve'),memoProblem:UI.v('cf_memoProblem'),memoDirection:UI.v('cf_memoDirection'),memoProcess:UI.v('cf_memoProcess'),extra:UI.v('cf_extra')};
+    const data={studentId:sid,type:UI.v('cf_type'),date,counselor:UI.v('cf_counselor'),duration:UI.v('cf_duration'),schoolScore:UI.v('cf_schoolScore'),mockScore:UI.v('cf_mockScore'),targetScore:UI.v('cf_targetScore'),studyHours:UI.v('cf_studyHours'),hobbyHours:UI.v('cf_hobbyHours'),academyCount:UI.v('cf_academyCount'),studyPlace:UI.v('cf_studyPlace'),reading:UI.v('cf_reading'),studyMgmt:UI.v('cf_studyMgmt'),smartphone:UI.v('cf_smartphone'),wakeTime:UI.v('cf_wakeTime'),sleepTime:UI.v('cf_sleepTime'),studyInterest:UI.v('cf_studyInterest'),koreanInterest:UI.v('cf_koreanInterest'),problemStyle:_etcVal('cf_problemStyle','cf_problemStyle_etc'),typeMemorize:_etcVal('cf_typeMemorize','cf_typeMemorize_etc'),readingMethod:_etcVal('cf_readingMethod','cf_readingMethod_etc'),bookActivity:_etcVal('cf_bookActivity','cf_bookActivity_etc'),strength:UI.v('cf_strength'),weakness:UI.v('cf_weakness'),concern:UI.v('cf_concern'),goalScore:UI.cb('cg_score'),goalReading:UI.cb('cg_reading'),goalHabit:UI.cb('cg_habit'),goalSelf:UI.cb('cg_self'),otherGoal:UI.cb('cg_etc_check')?UI.v('cf_otherGoal'):'',tier:UI.v('cf_tier'),studyType:UI.v('cf_studyType'),parentType:UI.v('cf_parentType'),deficits:['vocab','sentence','structure','connect','infer','critical'].filter(k=>UI.cb('d_'+k)),wrongCause:UI.v('cf_wrongCause'),wrongPattern:UI.v('cf_wrongPattern'),diagComment:UI.v('cf_diagComment'),memoObserve:UI.v('cf_memoObserve'),memoProblem:UI.v('cf_memoProblem'),memoDirection:UI.v('cf_memoDirection'),memoProcess:UI.v('cf_memoProcess'),extra:UI.v('cf_extra'),onedaySuggest:UI.v('cf_onedaySuggest'),onedayDate:UI.v('cf_onedayDate'),onedayNote:UI.v('cf_onedayNote')};
     const nm=StudentStore.byId(sid)?.name||'학생',eid=AppState.counselingId;
     Loading.show('저장 중...');
     if(eid){await CounselingStore.update(eid,data);Loading.hide();UI.toast(`${nm} 상담 기록이 수정되었습니다.`,'success');}
     else{await CounselingStore.create(data);Loading.hide();UI.toast(`${nm} 상담 기록이 저장되었습니다.`,'success');}
+    // 원데이클래스 미제안 상태면 제안 유도 배너
+    if(!data.onedaySuggest||data.onedaySuggest==='not_suggested'||data.onedaySuggest===''){
+      setTimeout(()=>{
+        const prev=document.getElementById('_onedayBanner');if(prev)prev.remove();
+        const b=document.createElement('div');b.id='_onedayBanner';
+        b.style.cssText='position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:300;background:var(--navy);color:#fff;padding:12px 20px;border-radius:var(--r);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:12px;font-size:.85rem;max-width:540px;width:calc(100% - 32px)';
+        b.innerHTML=`<span style="flex:1">💡 <strong>${nm}</strong> 학생에게 원데이클래스를 제안하셨나요?</span><button onclick="document.getElementById('_onedayBanner')?.remove()" style="background:rgba(255,255,255,.18);color:#fff;border:none;padding:6px 12px;border-radius:5px;font-size:.8rem;cursor:pointer;font-family:inherit">나중에</button>`;
+        document.body.appendChild(b);setTimeout(()=>b.remove(),8000);
+      },400);
+    }
     AppState.setCounselingId(null);_resetForm();
     if(_returnSid){StudentsUI.renderStudentDetail(_returnSid);App.nav('studentDetail');}else{render();App.nav('counselings');}
   }
@@ -2030,7 +2151,7 @@ const CounselingsUI = (() => {
   async function deleteRecord(id){
     const c=CounselingStore.byId(id);if(!c)return;
     const nm=StudentStore.byId(c.studentId)?.name||'학생';
-    if(!UI.confirm_(`${nm} 상담 기록(${c.date})을 삭제하시겠습니까?`))return;
+    if(!await UI.confirm_(`${nm} 상담 기록(${c.date})을 삭제하시겠습니까?`))return;
     await CounselingStore.delete(id);UI.toast('삭제되었습니다.','success');UI.closeModal('counselingViewModal');
     render();if(AppState.studentId===c.studentId)StudentsUI.renderStudentDetail(c.studentId);
   }
@@ -2048,17 +2169,228 @@ const CounselingsUI = (() => {
     const goals=[c.goalScore&&'성적',c.goalReading&&'독해력',c.goalHabit&&'습관',c.goalSelf&&'자기주도'].filter(Boolean).join(' · ');
     return`<div class="cv-section"><h4>상담 기본</h4><div class="cv-grid">${r('유형',c.type)}${r('상담일',c.date)}${r('담당자',c.counselor)}${r('시간',c.duration?c.duration+'분':'')}</div></div><div class="cv-section"><h4>진단 결과</h4><div style="margin-bottom:8px">${UI.tierBadge(c.tier)}${c.studyType?`&nbsp;<span class="badge badge-navy" style="font-size:.7rem">${UI.e(c.studyType.split('—')[0].trim())}</span>`:''}${c.parentType?`&nbsp;<span class="badge badge-purple" style="font-size:.7rem">${UI.e(c.parentType)}</span>`:''}</div>${c.deficits?.length?`<div style="margin-bottom:6px">결손: ${UI.deficitTags(c.deficits)}</div>`:''}${r('오답원인',c.wrongCause)}${m('오답패턴',c.wrongPattern)}${m('진단소견',c.diagComment)}</div><div class="cv-section"><h4>학습 상황</h4><div class="cv-grid">${r('학교',c.schoolScore)}${r('모의고사',c.mockScore)}${r('목표',c.targetScore)}${r('공부시간',c.studyHours)}${r('공부흥미',c.studyInterest+'/5')}${r('국어흥미',c.koreanInterest+'/5')}</div></div><div class="cv-section"><h4>환경 & 방식</h4><div class="cv-grid">${r('장소',c.studyPlace)}${r('독서',c.reading)}${r('학습관리',c.studyMgmt)}${r('스마트폰',c.smartphone)}${r('기상',c.wakeTime)}${r('취침',c.sleepTime)}</div></div><div class="cv-section"><h4>학부모</h4><div class="cv-grid">${r('강점',c.strength)}${r('약점',c.weakness)}</div>${m('걱정',c.concern)}${goals?`<p style="font-size:.82rem;margin-top:6px">목표: <strong>${UI.e(goals)}</strong></p>`:''}</div>${(c.memoObserve||c.memoProblem||c.memoDirection||c.memoProcess)?`<div class="cv-section"><h4>상담 메모</h4>${m('관찰',c.memoObserve)}${m('해석',c.memoProblem)}${m('지도방향',c.memoDirection)}${m('추진계획',c.memoProcess)}</div>`:''} ${c.extra?`<div class="cv-section"><h4>기타</h4><div class="cv-memo-val">${UI.e(c.extra)}</div></div>`:''}`;
   }
+  function updateRecommend(){
+    const tier = UI.v('cf_tier'), st = UI.v('cf_studyType');
+    const card = document.getElementById('rlhd_recommend_card');
+    const body = document.getElementById('rlhd_recommend_body');
+    if(!card||!body) return;
+    if(!tier&&!st){ card.style.display='none'; return; }
+
+    // ── 데이터 수집 ──
+    const deficits = ['vocab','sentence','structure','connect','infer','critical'].filter(k=>UI.cb('d_'+k));
+    const ki = parseInt(document.getElementById('cf_koreanInterest')?.value)||3;
+    const studyMgmt = UI.v('cf_studyMgmt');
+
+    // ── 숫자 입력값 검증 ──
+    const academyCount = parseInt(UI.v('cf_academyCount')) || 0;
+    const studyHoursRaw = parseFloat(UI.v('cf_studyHours')) || 0;
+    const hobbyHoursRaw = parseFloat(UI.v('cf_hobbyHours')) || 0;
+    const suspectInput = (academyCount > 6) || (studyHoursRaw > 14) || (hobbyHoursRaw > 16);
+
+    // ── 진단 신뢰도 판단 ──
+    // 티어는 있으나 결손·학습자유형 모두 미입력이면 "추가 확인 필요" 플래그
+    const lowConfidence = !!(tier && deficits.length === 0 && !st);
+
+    // ── 티어 데이터 ──
+    const tierData = {
+      T1:{ product:'Re:논리독해 — 기초독해반', freq:'주 2~3회', period:'8~12주',
+           steps:['독서(비문학): 정보 추출·문장 단위 독해','문학: 감정·흐름 파악 기초 독해','어휘: 문장 기반 한자어휘'],
+           coachType:'감성코칭',
+           risk:'기초 없이 문제만 풀면 성적은 오르지 않습니다.',
+           scenario:[{week:'1~3주',label:'기초 체력 형성',desc:'어휘·문장 단위 독해 훈련 — 읽으면 남는 감각 만들기'},{week:'4~7주',label:'구조 적용 시작',desc:'문단 전개 방식 파악 + 핵심문 추출 반복'},{week:'8~12주',label:'문제 연결',desc:'학습한 구조로 실제 문제 풀이 적용 및 오답 교정'}] },
+      T2:{ product:'Re:논리사고 — 구조독해반', freq:'주 2~3회', period:'8~12주',
+           steps:['독서(비문학): 구조 파악·정보 연결 추론','문학: 표현법·소재 통한 감정-의도 추론','어휘: 독해 기반 교과어휘'],
+           coachType:'오류+감성 병행',
+           risk:'구조 없이 계속 풀면 흔들리는 성적이 반복됩니다.',
+           scenario:[{week:'1~2주',label:'구조 기준 설계',desc:'글의 전개 방식 분류 + 정보 연결 흐름 파악'},{week:'3~6주',label:'구조 독해 훈련',desc:'지문 구조화 → 근거 기반 선지 판단 반복'},{week:'7~12주',label:'실전 적용 및 점검',desc:'오답 패턴 분석 + 약점 교정으로 성적 안정화'}] },
+      T3:{ product:'Re:논리판단 — 추론독해반', freq:'주 2~3회', period:'8~12주',
+           steps:['독서(비문학): 숨겨진 의도·정보 추리 독해','문학: 함축 의미·배경 유추 독해','논리추론: 보이지 않는 조건과 근거 추론'],
+           coachType:'오류코칭',
+           risk:'추론이 안 되면 상위권 직전에서 계속 막힙니다.',
+           scenario:[{week:'1~3주',label:'추론 기초 훈련',desc:'전제·함의 파악 훈련 — 지문 외 내용 읽기'},{week:'4~7주',label:'논리추론 강화',desc:'관점 비교·논거 타당성 판단 반복 훈련'},{week:'8~12주',label:'고난도 대응 완성',desc:'상위권 유형 실전 적용 및 오류 패턴 제거'}] },
+      T4:{ product:'Re:논리판단 심화 — 비평독해반', freq:'주 2~3회', period:'8~12주',
+           steps:['독서(비문학): 의도·논리 추적·스키마 분석 독해','문학: <보기>·스키마 활용 비평 독해','언매: 문법 구조와 원리 기준 형성'],
+           coachType:'오류코칭',
+           risk:'감으로 푸는 한 최상위 진입은 어렵습니다.',
+           scenario:[{week:'1~3주',label:'출제자 시선 훈련',desc:'지문 의도·논리 구조 추적 + 스키마 활용 독해'},{week:'4~7주',label:'선지 판단 정확도 강화',desc:'근거 기반 정답 확신 훈련 + 오답 분해'},{week:'8~12주',label:'최상위 실전 완성',desc:'취약 유형 집중 교정 + 실전 시뮬레이션'}] },
+      T5:{ product:'Re:메타독해 — 실전완성반', freq:'주 2~3회', period:'지속',
+           steps:['독서(비문학): 고난도·신유형 정확 풀이','문학: 고난도·복합유형 정확 풀이','언매: 수능 문법 실수 제거'],
+           coachType:'오류코칭 + 골든타임',
+           risk:'시험장에서 흔들리면 실력과 무관하게 성적이 무너집니다.',
+           scenario:[{week:'1~3주',label:'루틴 최적화',desc:'골든타임 설정 + 문제 풀이 순서·시간 배분 정교화'},{week:'4~8주',label:'취약 패턴 제거',desc:'오답 분석 + 반복 실수 유형 완전 교정'},{week:'9주~',label:'실전 기복 제거',desc:'모의고사 시뮬레이션 + 멘탈 루틴 유지 훈련'}] },
+    };
+
+    // ── 학습자 유형 처방 ──
+    const stData = {
+      st_explore:{ label:'방향 탐색형', coachType:'오류코칭',
+        actions:['오류코칭으로 학습 전략 재설계', '방향 잡힌 후 수업 투입'],
+        risk:'방향 없이 계속 하면 시간만 소비됩니다.' },
+      st_effort:{ label:'성실 노력형', coachType:'오류코칭',
+        actions:['오류 패턴 즉시 분해·교정', '투입 시간 대비 효율 구조화'],
+        risk:'방법이 틀린 채로 열심히 하면 번아웃으로 이어집니다.' },
+      st_rebuild:{ label:'기초 재건형', coachType:'감성코칭 후 오류코칭',
+        actions:['T1 수업으로 진입 재조정 필수', '개념 공백부터 체계적으로 채우기'],
+        risk:'빈 곳을 메우지 않으면 위로 쌓아도 무너집니다.' },
+      st_nomotive:{ label:'동기 결핍형', coachType:'감성코칭 선행 필수',
+        actions:['감성코칭 4주 선행 — 흥미 없이 투입 시 이탈', '루틴 설계로 작은 성공 경험 쌓기'],
+        risk:'동기 없이 수업만 넣으면 이탈 가능성이 높습니다.' },
+      st_anxiety:{ label:'불안 회피형', coachType:'감성코칭 집중',
+        actions:['감성코칭으로 심리 장벽 제거', '점진적 난이도 상승으로 자신감 회복'],
+        risk:'불안이 해소되지 않으면 실전에서 계속 무너집니다.' },
+      st_dysregul:{ label:'자기조절 미발달형', coachType:'루틴 설계 우선',
+        actions:['루틴 설계 선행 — 수업보다 구조가 먼저', '감성코칭으로 지속성 확보'],
+        risk:'루틴 없이 수업만 넣으면 흡수가 되지 않습니다.' },
+      st_latent:{ label:'잠재력 미발현형', coachType:'감성코칭 후 빠른 진입',
+        actions:['환경·동기 개입 2주 후 수업 투입', '급속 성장 구간 진입 가능'],
+        risk:'환경이 안 바뀌면 잠재력은 계속 묻혀 있습니다.' },
+      st_plateau:{ label:'고원 정체형', coachType:'오류코칭 심화',
+        actions:['오류 패턴 제거 — 현재 방식으로는 정체 탈출 불가', '심화 전략으로 전환 필수'],
+        risk:'같은 방식을 반복하면 지금 수준에서 더 오르지 못합니다.' },
+    };
+
+    // ── 결손 처방 ──
+    const deficitMap = {
+      vocab:'어휘·배경지식 → 한자어휘 집중 훈련 즉시 투입',
+      sentence:'문장·구문 해석 → 복문 분해 훈련 추가 필수',
+      structure:'텍스트 구조 → 문단 구조 파악 훈련 선행',
+      connect:'정보 통합·연결 → 핵심문 찾기 반복 훈련',
+      infer:'추론적 독해 → 맥락 독해·전제 파악 집중',
+      critical:'비판적 사고 → 관점 비교·논거 타당성 훈련',
+    };
+
+    const td = tier ? tierData[tier] : null;
+    const sd = st ? stData[st] : null;
+    const deficitList = deficits.map(d=>deficitMap[d]).filter(Boolean);
+
+    // ── 관리 필수 판단 ──
+    const needsMgmt = ['sm_parent','sm_academy','sm_avoidant'].includes(studyMgmt)
+      || ['st_nomotive','st_anxiety','st_dysregul','st_rebuild'].includes(st)
+      || ki <= 2;
+
+    // ── 원데이 권장 판단 (결손 1개 이상 or 동기결핍/불안/자기조절 유형) ──
+    const needsOneday = deficits.length >= 1
+      || ['st_nomotive','st_anxiety','st_dysregul','st_rebuild'].includes(st)
+      || (tier && ['T1','T2'].includes(tier));
+
+    // ── 판정 레이블 조합 ──
+    const verdictParts = [];
+    if(tier) verdictParts.push(tier);
+    if(sd) verdictParts.push(sd.label);
+    if(deficits.length) verdictParts.push(`결손 ${deficits.length}개`);
+
+    // ── 즉시 조치 항목 수집 ──
+    const actions = [];
+    if(td) actions.push(`→ ${td.product} 등록 (${td.freq}, ${td.period})`);
+    if(needsMgmt && td) actions.push(`→ 리런관리 필수 적용 — ${td.coachType} (개별 원인 분석 후 세부 조정)`);
+    if(sd) sd.actions.forEach(a => actions.push(`→ ${a}`));
+    if(deficitList.length) deficitList.forEach(d => actions.push(`→ ${d}`));
+    if(needsOneday) actions.push(`→ 원데이클래스 진행으로 학습 충격 설계 (등록 전환 핵심 단계)`);
+
+    // ── 미적용 시 위험 ──
+    const risks = [];
+    if(td) risks.push(td.risk);
+    if(sd) risks.push(sd.risk);
+    if(deficits.length >= 2) risks.push(`복합 결손 상태 (${deficits.length}개 영역) — 단순 문제풀이로는 해결되지 않습니다.`);
+
+    // ── HTML 출력 ──
+    let html = `<div style="display:flex;flex-direction:column;gap:0;border:2px solid var(--navy);border-radius:var(--r-lg);overflow:hidden">`;
+
+    // 판정
+    html += `<div style="background:var(--navy);color:#fff;padding:14px 18px">
+      <div style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">판정</div>
+      <div style="font-size:1.05rem;font-weight:800;line-height:1.4">${verdictParts.join(' + ') || '진단 정보를 입력해주세요'}</div>
+      ${td ? `<div style="font-size:.82rem;opacity:.7;margin-top:4px">${td.product}</div>` : ''}
+    </div>`;
+
+    // 즉시 조치
+    if(actions.length){
+      html += `<div style="background:var(--surface);padding:14px 18px;border-bottom:1px solid var(--border-l)">
+        <div style="font-size:.68rem;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">즉시 조치</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          ${actions.map(a=>`<div style="font-size:.86rem;color:var(--text);line-height:1.55;font-weight:${a.includes('원데이')?700:400}">${a}</div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    // 수업 구성
+    if(td){
+      html += `<div style="background:var(--surface2);padding:12px 18px;border-bottom:1px solid var(--border-l)">
+        <div style="font-size:.68rem;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">수업 구성</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${td.steps.map((s,i)=>`<div style="display:flex;gap:8px;font-size:.83rem;color:var(--text-2);line-height:1.5">
+            <span style="min-width:16px;height:16px;border-radius:50%;background:var(--blue);color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</span>
+            <span>${s}</span>
+          </div>`).join('')}
+        </div>
+      </div>`;
+
+      // 진행 시나리오 (기간 + 단계)
+      if(td.scenario){
+        html += `<div style="background:var(--surface);padding:12px 18px;border-bottom:1px solid var(--border-l)">
+          <div style="font-size:.68rem;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">진행 시나리오</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${td.scenario.map((step,i)=>`<div style="display:flex;align-items:flex-start;gap:10px">
+              <span style="background:var(--blue-pale);color:var(--blue);font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;margin-top:2px">${step.week}</span>
+              <div>
+                <div style="font-size:.83rem;font-weight:700;color:var(--text)">${step.label}</div>
+                <div style="font-size:.78rem;color:var(--text-3);line-height:1.5;margin-top:1px">${step.desc}</div>
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>`;
+      }
+    }
+
+    // 미적용 시 위험
+    if(risks.length){
+      html += `<div style="background:#fff8f0;padding:12px 18px;border-top:2px solid #f5c07a">
+        <div style="font-size:.68rem;font-weight:800;color:#b45309;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">⚠ 미적용 시</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          ${risks.map(r=>`<div style="font-size:.84rem;color:#7c4a00;line-height:1.55">${r}</div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    // 데이터 부족 경고
+    if(lowConfidence){
+      html += `<div style="background:var(--amber-pale);padding:10px 16px;border-top:1px solid #f6c66b">
+        <div style="font-size:.8rem;color:#92400e;line-height:1.6">
+          💬 <strong>추가 진단 권장</strong> — 결손 영역과 학습자 유형을 함께 입력하면 더 정확한 처방이 나옵니다.
+        </div>
+      </div>`;
+    }
+
+    // 숫자 입력값 이상 경고
+    if(suspectInput){
+      html += `<div style="background:var(--red-pale);padding:10px 16px;border-top:1px solid #f5a0a0">
+        <div style="font-size:.8rem;color:var(--red);line-height:1.6">
+          ⚠ 입력된 시간·학원 수 일부가 비정상 범위입니다. 상담 내용을 다시 확인해주세요.
+        </div>
+      </div>`;
+    }
+
+    html += `</div>`;
+
+    // 원데이 버튼 — 결손 있거나 동기/불안/자기조절 유형이면 강조 표시
+    const btnStyle = needsOneday
+      ? `background:var(--accent);color:#fff;border:none;padding:13px 18px;border-radius:var(--r);font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px`
+      : `background:var(--navy);color:#fff;border:none;padding:10px 18px;border-radius:var(--r);font-size:.84rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px`;
+
+    html += `<button type="button" style="${btnStyle};margin-top:8px"
+      onclick="UI.switchTab(document.querySelector('[data-tab=cf-memo]'),'counselingFormTabs');setTimeout(()=>document.getElementById('cf_onedaySuggest')?.focus(),200)">
+      ${needsOneday ? '⚡ 원데이클래스 진행 — 지금 바로 제안하세요' : '원데이클래스 제안 기록하기'}
+    </button>
+
+    <div style="font-size:.72rem;color:var(--text-4);line-height:1.6;margin-top:8px;padding:0 2px">
+      ※ 본 판정은 1차 상담 내용을 기반으로 자동 생성되었으며, 정밀 진단 후 일부 내용이 조정될 수 있습니다.
+    </div>`;
+
+    body.innerHTML = html;
+    card.style.display = 'block';
+  }
   return {
-    render,
-    populateStudentSelect,
-    onStudentSelect,
-    toggleEtc,
-    openNew,
-    openNewForCurrent,
-    openEdit,
-    save,
-    deleteRecord,
-    openViewModal
+    render, populateStudentSelect, onStudentSelect, toggleEtc, updateRecommend,
+    openNew, openNewForCurrent, openEdit, save, deleteRecord, openViewModal
   };
 })();
 
@@ -2070,9 +2402,15 @@ const FollowupUI = (() => {
   function render(){_rt(FollowupStore.dueToday(),'fuTodayBody','오늘 후속 연락 예정이 없습니다. 👍');_rt(FollowupStore.overdue(),'fuOverdueBody','기한 초과 건이 없습니다. 👍');_rt(FollowupStore.upcoming(),'fuUpcomingBody','예정된 후속 연락이 없습니다.');_badge();}
   function _rt(items,bid,em){const b=document.getElementById(bid);if(!b)return;if(!items.length){b.innerHTML=UI.emptyState(em);return;}b.innerHTML=items.map(({s,f})=>{const nd=FollowupStore.nextDueDate(s.id),od=nd&&nd<_today()?UI.daysDiff(nd):0;return`<tr><td onclick="StudentsUI.openDetail('${s.id}')" style="cursor:pointer"><div class="td-name">${UI.e(s.name)}</div><div class="td-sub">${UI.e(s.grade||'')} · ${UI.e(s.manager||'')}</div></td><td>${UI.statusBadge(s.status)}</td><td>${nd?`<span class="badge ${od>0?'badge-red':nd===_today()?'badge-amber':'badge-navy'}">${UI.fmtDate(nd)}</span>`:'-'}${od>0?`<span class="badge badge-red" style="margin-left:3px">+${od}일</span>`:''}</td><td style="font-size:.79rem;max-width:140px;color:var(--text-2)">${f?`${UI.e(f.actionType)} — ${UI.e(f.result)}`:'이력 없음'}</td><td onclick="event.stopPropagation()"><button class="btn btn-primary btn-xs" onclick="FollowupUI.openForm('${s.id}')">✦ 처리</button></td></tr>`;}).join('');}
   function switchTab(btn){document.querySelectorAll('.tab-bar .tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('#page-followup .tab-content').forEach(c=>c.classList.remove('active'));btn.classList.add('active');document.getElementById(btn.dataset.tab)?.classList.add('active');}
-  function openForm(sid){AppState.setFollowupId(null);const s=StudentStore.byId(sid);if(!s)return;_fill({studentId:sid,dueDate:_today(),manager:s.manager||''});UI.innerText('fuModalTitle',`${s.name} — 후속 연락 등록`);UI.innerText('fuModalSub',`현재 상태: ${s.status}`);_rh(sid);UI.clearFieldErrors(_FE);UI.openModal('followupModal');}
+  function openForm(sid){AppState.setFollowupId(null);const s=StudentStore.byId(sid);if(!s)return;_fill({studentId:sid,dueDate:_today(),manager:s.manager||''});UI.innerText('fuModalTitle',`${s.name} — 후속 연락 등록`);UI.innerText('fuModalSub',`현재 상태: ${s.status}`);_rh(sid);UI.clearFieldErrors(_FE);
+    // 등록 학생이면 리런관리 섹션 표시
+    const mgmtSec=document.getElementById('fu_mgmtSection');
+    if(mgmtSec) mgmtSec.style.display=s.enrolled?'block':'none';
+    UI.openModal('followupModal');}
   function openEditForm(fid){const f=FollowupStore.byId(fid);if(!f)return;AppState.setFollowupId(fid);const s=StudentStore.byId(f.studentId);_fill(f);UI.innerText('fuModalTitle',`${s?.name||'?'} — 수정`);UI.innerText('fuModalSub','');_rh(f.studentId);UI.clearFieldErrors(_FE);UI.openModal('followupModal');}
-  function _fill(d){UI.sv('fu_id',d.id||'');UI.sv('fu_studentId',d.studentId||'');UI.sv('fu_dueDate',d.dueDate||_today());UI.sv('fu_actionType',d.actionType||'');UI.sv('fu_result',d.result||'');UI.sv('fu_resultNote',d.resultNote||'');UI.sv('fu_nextDueDate',d.nextDueDate||'');UI.sv('fu_nextStatus',d.nextStatus||'');UI.sv('fu_manager',d.manager||'');}
+  function _fill(d){UI.sv('fu_id',d.id||'');UI.sv('fu_studentId',d.studentId||'');UI.sv('fu_dueDate',d.dueDate||_today());UI.sv('fu_actionType',d.actionType||'');UI.sv('fu_result',d.result||'');UI.sv('fu_resultNote',d.resultNote||'');UI.sv('fu_nextDueDate',d.nextDueDate||'');UI.sv('fu_nextStatus',d.nextStatus||'');UI.sv('fu_manager',d.manager||'');
+    // 리런관리 필드
+    UI.sv('fu_focusMin',d.focusMin||'');UI.sv('fu_taskRate',d.taskRate||'');UI.sv('fu_routineRate',d.routineRate||'');UI.sv('fu_mgmtNote',d.mgmtNote||'');}
   function _rh(sid){const list=FollowupStore.byStudent(sid),eid=AppState.followupId;UI.innerHTML('fuModalHistory',list.length?list.slice(0,6).map(f=>`<div class="fu-hist-item"><div class="fu-hist-dot${eid===f.id?' fu-hist-dot-active':''}"></div><div style="flex:1;min-width:0"><div class="fu-hist-date">${UI.fmtDate(f.dueDate)} · ${UI.e(f.actionType)} · ${UI.e(f.manager)}</div><div class="fu-hist-result">${UI.e(f.result||'-')}</div>${f.resultNote?`<div class="fu-hist-note">${UI.e(f.resultNote)}</div>`:''}${f.nextDueDate?`<div class="fu-hist-next">→ ${UI.fmtDate(f.nextDueDate)}</div>`:''}</div><div style="flex-shrink:0;display:flex;gap:3px"><button class="btn btn-ghost btn-xs" onclick="FollowupUI.openEditForm('${f.id}')">수정</button><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="FollowupUI.deleteRecord('${f.id}')">삭제</button></div></div>`).join(''):'<div style="font-size:.82rem;color:var(--text-4);padding:6px 0">이전 이력 없음</div>');}
 
   async function save(){
@@ -2082,11 +2420,11 @@ const FollowupUI = (() => {
     if(!UI.v('fu_actionType')){UI.showFieldError('fu_actionType','연락 유형을 선택해주세요.');fe='fu_actionType';}
     if(!UI.v('fu_result')&&!fe){UI.showFieldError('fu_result','연락 결과를 선택해주세요.');fe='fu_result';}
     if(fe)return;
-    const de=Validate.followupDates(due,nd);if(de){if(!UI.confirm_(`⚠ ${de}\n계속 저장하시겠습니까?`))return;}
+    const de=Validate.followupDates(due,nd);if(de){if(!await UI.confirm_(`⚠ ${de}\n계속 저장하시겠습니까?`))return;}
     const nextSt=UI.v('fu_nextStatus');const s=StudentStore.byId(sid);
     let applyStatus=false;
-    if(nextSt&&nextSt!==s?.status){applyStatus=UI.confirm_(`상담 상태를 "${s?.status}" → "${nextSt}"으로 변경하시겠습니까?`);}
-    const data={studentId:sid,dueDate:due,actionType:UI.v('fu_actionType'),result:UI.v('fu_result'),resultNote:UI.v('fu_resultNote'),nextDueDate:nd,nextStatus:applyStatus?nextSt:'',manager:UI.v('fu_manager')};
+    if(nextSt&&nextSt!==s?.status){applyStatus=await UI.confirm_(`상담 상태를 "${s?.status}" → "${nextSt}"으로 변경하시겠습니까?`);}
+    const data={studentId:sid,dueDate:due,actionType:UI.v('fu_actionType'),result:UI.v('fu_result'),resultNote:UI.v('fu_resultNote'),nextDueDate:nd,nextStatus:applyStatus?nextSt:'',manager:UI.v('fu_manager'),focusMin:UI.v('fu_focusMin'),taskRate:UI.v('fu_taskRate'),routineRate:UI.v('fu_routineRate'),mgmtNote:UI.v('fu_mgmtNote')};
     const fid=AppState.followupId,nm=s?.name||'학생';
     Loading.show('저장 중...');
     if(fid){await FollowupStore.update(fid,data);}else{await FollowupStore.create(data);}
@@ -2098,7 +2436,7 @@ const FollowupUI = (() => {
     if(AppState.page==='studentDetail')StudentsUI.renderStudentDetail(sid);
     _badge();
   }
-  async function deleteRecord(fid){const f=FollowupStore.byId(fid);if(!f)return;const nm=StudentStore.byId(f.studentId)?.name||'학생';if(!UI.confirm_(`${nm} 후속 연락 기록을 삭제하시겠습니까?`))return;const sid=f.studentId;await FollowupStore.delete(fid);UI.toast('삭제되었습니다.','success');UI.closeModal('followupModal');if(AppState.page==='followup')render();if(AppState.page==='studentDetail')StudentsUI.renderStudentDetail(sid);_badge();}
+  async function deleteRecord(fid){const f=FollowupStore.byId(fid);if(!f)return;const nm=StudentStore.byId(f.studentId)?.name||'학생';if(!await UI.confirm_(`${nm} 후속 연락 기록을 삭제하시겠습니까?`))return;const sid=f.studentId;await FollowupStore.delete(fid);UI.toast('삭제되었습니다.','success');UI.closeModal('followupModal');if(AppState.page==='followup')render();if(AppState.page==='studentDetail')StudentsUI.renderStudentDetail(sid);_badge();}
   function _badge(){const cnt=AppStats.urgentFollowups();const el=document.getElementById('navBadgeFollowup');if(!el)return;el.textContent=cnt;el.style.display=cnt>0?'':'none';}
   return{render,switchTab,openForm,openEditForm,save,deleteRecord,_badge};
 })();
@@ -2137,13 +2475,191 @@ const ReportUI = (() => {
     const td=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}),cnslr=c.counselor||'담당 강사',name=s.name;
     const goals=[c.goalScore&&'국어 내신·수능 성적 향상',c.goalReading&&'독해력 및 사고력 향상',c.goalHabit&&'학습 습관 및 루틴 형성',c.goalSelf&&'자기주도 학습 역량 강화'].filter(Boolean);
     const ti=_tierInfo(c.tier),obs=_obs(s,c,name),interp=_interp(s,c,name),conflict=_conflict(s,c,name),dir=_dir(s,c,name,goals),plans=_plans(s,c,name,goals);
-    return`<div class="report-shell"><div class="report-body"><div class="rpt-header"><div class="rpt-logo-block"><div class="rpt-logo">리런하다 국어</div><small>학부모 상담 리포트 · 학습 분석 보고서</small></div><div class="rpt-meta">발행일: ${td}<br>상담일: ${UI.fmtDate(c.date)}<br>담당: ${UI.e(cnslr)}<br>총 상담: ${allC.length}회</div></div><div class="rpt-student-block"><div class="rpt-doc-title">학 습 분 석 리 포 트</div><div class="rpt-student-name">${UI.e(name)} 학생</div><div class="rpt-student-info">${UI.e(s.school||'')} ${UI.e(s.grade||'')} · 상담경로: ${UI.e(s.route||'-')}</div></div>
-    <div class="rpt-section"><div class="rpt-section-title">1. 학생 현재 상태 관찰</div><div class="rpt-highlight"><div class="rpt-hl-label">📊 독해 역량 진단</div><div class="rpt-hl-body">${c.tier?`<span style="background:${UI.TIER_STYLE[c.tier]?.bg||'#eee'};color:${UI.TIER_STYLE[c.tier]?.color||'#333'};display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:99px;font-weight:800;font-size:.88rem">${c.tier} · ${UI.TIER_STYLE[c.tier]?.label}</span>`:'<span class="badge badge-gray">미진단</span>'} <span style="font-size:.86rem;margin-left:8px">${ti.desc}</span></div></div><div class="rpt-grid-2"><div class="rpt-box"><div class="rpt-box-title">성적 현황</div><div class="rpt-box-body">${obs.score}</div></div><div class="rpt-box"><div class="rpt-box-title">학습 환경</div><div class="rpt-box-body">${obs.env}</div></div><div class="rpt-box"><div class="rpt-box-title">생활 패턴</div><div class="rpt-box-body">${obs.life}</div></div><div class="rpt-box"><div class="rpt-box-title">학습 태도 & 흥미</div><div class="rpt-box-body">${obs.attitude}</div></div></div>${c.memoObserve?`<div class="rpt-highlight" style="margin-top:12px"><div class="rpt-hl-label">🔍 강사 관찰 기록</div><div class="rpt-hl-body">${UI.e(c.memoObserve)}</div></div>`:''}</div>
-    <div class="rpt-section"><div class="rpt-section-title">2. 국어 학습 문제 해석</div>${c.deficits?.length?`<div class="rpt-warning"><div class="rpt-hl-label">⚠ 주요 결손 영역</div><div class="rpt-hl-body"><div style="margin-bottom:6px">${UI.deficitTags(c.deficits)}</div>${interp.deficitDesc}</div></div>`:''}<p style="font-size:.87rem;line-height:1.95;color:var(--text);margin-bottom:12px">${interp.main}</p>${conflict.items.length?`<div class="rpt-conflict-block"><div class="rpt-hl-label">⚡ 주목할 데이터 패턴 (추가 관찰 권장)</div><ul class="rpt-conflict-list">${conflict.items.map(t=>`<li>${t}</li>`).join('')}</ul></div>`:''}${c.memoProblem?`<div class="rpt-highlight"><div class="rpt-hl-label">💡 핵심 문제 진단</div><div class="rpt-hl-body">${UI.e(c.memoProblem)}</div></div>`:''}<div class="rpt-grid-2" style="margin-top:12px"><div class="rpt-box"><div class="rpt-box-title">학부모가 파악한 강점</div><div class="rpt-box-body">${UI.e(c.strength||'미기재')}</div></div><div class="rpt-box"><div class="rpt-box-title">학부모가 파악한 약점</div><div class="rpt-box-body">${UI.e(c.weakness||'미기재')}</div></div>${c.concern?`<div class="rpt-box" style="grid-column:1/-1"><div class="rpt-box-title">가장 걱정되는 부분</div><div class="rpt-box-body">${UI.e(c.concern)}</div></div>`:''}</div></div>
-    <div class="rpt-section"><div class="rpt-section-title">3. 학습 지도 방향</div>${c.memoDirection?`<div class="rpt-highlight"><div class="rpt-hl-label">🎯 지도 방향</div><div class="rpt-hl-body">${UI.e(c.memoDirection)}</div></div>`:''}<p style="font-size:.87rem;line-height:1.95;color:var(--text);margin-bottom:10px">${dir.main}</p>${goals.length?`<div style="margin-bottom:10px;padding:10px 14px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border-l)"><span style="font-size:.76rem;font-weight:700;color:var(--text-3)">설정 목표:</span><span style="margin-left:8px">${goals.map(g=>`<span class="badge badge-blue">${g}</span>`).join(' ')}</span></div>`:''}${c.studyType?`<p style="font-size:.84rem;color:var(--text-2);margin-bottom:6px">📌 학습 상태 유형: <strong>${UI.e(c.studyType)}</strong></p>`:''}${c.parentType?`<p style="font-size:.84rem;color:var(--text-2);margin-bottom:12px">👨‍👩‍👧 학부모 기대 유형: <strong>${UI.e(c.parentType)}</strong></p>`:''}</div>
-    <div class="rpt-section"><div class="rpt-section-title">4. 향후 학습 계획</div><div class="rpt-plan">${plans.map((p,i)=>`<div class="rpt-plan-item"><div class="rpt-plan-num">${i+1}</div><div class="rpt-plan-content"><h5>${p.title}</h5><p>${p.desc}</p></div></div>`).join('')}</div>${c.memoProcess?`<div class="rpt-highlight" style="margin-top:14px"><div class="rpt-hl-label">📋 강사 추진 계획</div><div class="rpt-hl-body">${UI.e(c.memoProcess)}</div></div>`:''}</div>
-    ${c.diagComment||c.extra?`<div class="rpt-section"><div class="rpt-section-title">5. 강사 소견 / 기타</div>${c.diagComment?`<div class="rpt-highlight"><div class="rpt-hl-label">진단 소견</div><div class="rpt-hl-body">${UI.e(c.diagComment)}</div></div>`:''}${c.extra?`<div class="rpt-box" style="margin-top:8px"><div class="rpt-box-title">기타</div><div class="rpt-box-body">${UI.e(c.extra)}</div></div>`:''}</div>`:''}
-    <div class="rpt-sign"><div>본 리포트는 상담 내용을 기반으로 작성되었습니다. — 리런하다 국어</div><div>담당 강사: ${UI.e(cnslr)}&nbsp;&nbsp;서명: ___________________</div></div></div></div>`;
+    // studyType / parentType — 내부 코드값 제거, 설명 텍스트만 표시
+    const _labelOnly = v => v ? UI.e(v.replace(/^[a-z_]+\s*[—-]\s*/i,'').split('—')[0].trim()) : '';
+    const studyTypeLabel = _labelOnly(c.studyType);
+    const parentTypeLabel = _labelOnly(c.parentType);
+    const hasMemoProcess = !!(c.memoProcess && c.memoProcess.trim());
+
+    return`<div class="report-shell"><div class="report-body">
+    <div class="rpt-header">
+      <div class="rpt-logo-block"><div class="rpt-logo">리런하다 국어</div><small>학부모 상담 리포트 · 학습 분석 보고서</small></div>
+      <div class="rpt-meta">발행일: ${td}<br>상담일: ${UI.fmtDate(c.date)}<br>담당: ${UI.e(cnslr)}<br>총 상담: ${allC.length}회</div>
+    </div>
+    <div class="rpt-student-block">
+      <div class="rpt-doc-title">학 습 분 석 리 포 트</div>
+      <div class="rpt-student-name">${UI.e(name)} 학생</div>
+      <div class="rpt-student-info">${UI.e(s.school||'')} ${UI.e(s.grade||'')}${s.route?` · 상담 경로: ${UI.e(s.route)}`:''}</div>
+    </div>
+
+    ${(()=>{
+      // 핵심 진단 한 줄 — 티어 + 학습자 유형 조합
+      const coreMsg = {
+        T1:'열심히 하지만 읽어도 남지 않는 구조에 있습니다.',
+        T2:'이해는 되는데 문제에서 계속 틀리는 구조에 있습니다.',
+        T3:'평균은 넘지만 상위권 문항 앞에서 막히는 구조에 있습니다.',
+        T4:'실력은 있지만 실전에서 확신이 없는 구조에 있습니다.',
+        T5:'역량은 완성됐지만 기복이 사라지지 않는 구조에 있습니다.',
+      };
+      const stAdd = {
+        st_nomotive:' 거기에 동기가 없는 상태까지 겹쳐 있습니다.',
+        st_anxiety:' 거기에 실패 경험으로 인한 심리적 장벽이 더해진 상태입니다.',
+        st_dysregul:' 거기에 루틴이 없어 흡수 자체가 되지 않는 상태입니다.',
+        st_rebuild:' 기초 개념의 공백이 가장 먼저 해결되어야 합니다.',
+        st_effort:' 노력의 방향이 잘못 설정되어 있어 효율이 낮은 상태입니다.',
+        st_plateau:' 지금 방식으로는 더 이상 올라가기 어려운 시점입니다.',
+      };
+      const core = c.tier ? coreMsg[c.tier] : null;
+      const add = c.studyType ? (stAdd[c.studyType]||'') : '';
+      if(!core) return '';
+      return `<div style="background:var(--navy);border-left:4px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:16px 20px;margin-bottom:16px">
+        <div style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">핵심 진단</div>
+        <div style="font-size:.95rem;font-weight:700;color:#fff;line-height:1.7">${UI.e(name)} 학생은 ${core}${add}</div>
+      </div>`;
+    })()}
+
+    ${c.concern ? `<div style="background:var(--surface2);border-radius:var(--r);padding:14px 18px;margin-bottom:16px;border:1px solid var(--border-l)">
+      <div style="font-size:.7rem;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">보호자께서 가장 걱정하시는 부분</div>
+      <div style="font-size:.88rem;color:var(--text);line-height:1.8">"${UI.e(c.concern)}"</div>
+      <div style="font-size:.82rem;color:var(--text-3);margin-top:6px;line-height:1.65">본 리포트는 이 부분을 중심으로 작성되었습니다.</div>
+    </div>` : ''}
+    ${c.tier?(()=>{
+      const riskMap={
+        T1:'지금 방식 유지 시 성적 상승 가능성 낮습니다. 어휘·문장 이해가 없는 상태에서는 문제를 많이 풀어도 실력으로 연결되지 않습니다.',
+        T2:'구조 없이 계속 풀면 성적 상승과 하락이 반복됩니다. "이해는 되는데 틀리는" 패턴은 방식을 바꾸지 않으면 사라지지 않습니다.',
+        T3:'지금 방식으로는 상위권 직전에서 계속 막힙니다. 추론이 안 되면 고난도 문항에서 번번이 무너지는 패턴이 굳어집니다.',
+        T4:'최상위 진입 가능성 낮습니다. 한 문제의 판단 오류가 등급을 갈라놓는 수준에서, 근거 없는 확신으로는 실전에서 계속 흔들립니다.',
+        T5:'실력이 있어도 시험장에서 흔들리면 성적은 무너집니다. 기복을 없애는 훈련 없이는 실력이 성적으로 연결되지 않습니다.',
+      };
+      const changeMap={
+        T1:'기초독해반을 통해 어휘·문장부터 다시 세우면, 같은 시간 공부해도 내용이 쌓이기 시작합니다.',
+        T2:'구조독해 훈련으로 글의 흐름을 잡는 눈이 생기면, 감이 아닌 근거로 답을 고르는 패턴이 만들어집니다.',
+        T3:'추론독해 훈련으로 숨겨진 의미를 읽어내는 능력이 생기면, "왜 답이지?"가 "이게 답이다"로 바뀝니다.',
+        T4:'비평독해 훈련으로 출제자의 눈으로 지문을 보게 되면, 정답과 오답의 이유를 스스로 설명할 수 있게 됩니다.',
+        T5:'메타독해 훈련으로 시간 압박 속에서도 판단이 흔들리지 않는 루틴이 생기면, 실력이 성적으로 정확히 연결됩니다.',
+      };
+      // Re:관리 코칭 자동 매칭
+      const stCoachMap={
+        st_explore:'오류코칭 — 학습 방향 재설계 및 전략 교정',
+        st_effort:'오류코칭 — 방법론 교정, 효율 구조화',
+        st_rebuild:'감성코칭 → 오류코칭 — 좌절 방지 후 기초부터 재구성',
+        st_nomotive:'감성코칭 선행 필수 — 흥미 유발 없이 수업 투입 시 이탈',
+        st_anxiety:'감성코칭 집중 — 심리 장벽 제거, 작은 성공 설계',
+        st_dysregul:'루틴 설계 + 감성코칭 — 구조화 없이는 흡수 불가',
+        st_latent:'감성코칭 → 빠른 수업 진입 — 잠재력 발현 구간 진입',
+        st_plateau:'오류코칭 심화 — 정체 탈출, 취약 패턴 제거',
+      };
+      const coachLine = c.studyType ? stCoachMap[c.studyType] : null;
+      return `<div style="margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:10px;margin-bottom:${coachLine?'10px':'0'}">
+          <div style="background:#fff0e8;border:2px solid var(--accent);border-radius:var(--r);padding:16px 18px">
+            <div style="font-size:.72rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;margin-bottom:7px">⚠ 지금 이대로 유지하면</div>
+            <div style="font-size:.87rem;line-height:1.85;color:var(--text);font-weight:500">${riskMap[c.tier]||''}</div>
+          </div>
+          <div style="background:var(--green-pale);border:2px solid #7dd3a8;border-radius:var(--r);padding:16px 18px">
+            <div style="font-size:.72rem;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.3px;margin-bottom:7px">✓ 리런하다 적용 시</div>
+            <div style="font-size:.84rem;line-height:1.85;color:var(--text)">${changeMap[c.tier]||''}</div>
+          </div>
+        </div>
+        ${coachLine?`<div style="background:var(--blue-pale);border:1.5px solid #b8cff0;border-radius:var(--r);padding:11px 16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:.72rem;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap">Re:관리</span>
+          <span style="font-size:.84rem;color:var(--text)">${coachLine}</span>
+        </div>`:''}
+      </div>`;
+    })():''}
+    <div class="rpt-section">
+      <div class="rpt-section-title">1. 현재 학습 구조 진단</div>
+      <div class="rpt-highlight">
+        <div class="rpt-hl-label">독해 역량 진단 결과</div>
+        <div class="rpt-hl-body">${c.tier?`<span style="background:${UI.TIER_STYLE[c.tier]?.bg||'#eee'};color:${UI.TIER_STYLE[c.tier]?.color||'#333'};display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:99px;font-weight:800;font-size:.88rem">${c.tier} · ${UI.TIER_STYLE[c.tier]?.label}</span>`:'<span class="badge badge-gray">진단 예정</span>'} <span style="font-size:.86rem;margin-left:8px">${ti.desc}</span></div>
+      </div>
+      <div class="rpt-grid-2">
+        <div class="rpt-box"><div class="rpt-box-title">성적 현황</div><div class="rpt-box-body">${obs.score}</div></div>
+        <div class="rpt-box"><div class="rpt-box-title">학습 환경</div><div class="rpt-box-body">${obs.env}</div></div>
+        <div class="rpt-box"><div class="rpt-box-title">생활 패턴</div><div class="rpt-box-body">${obs.life}</div></div>
+        <div class="rpt-box"><div class="rpt-box-title">학습 태도 및 흥미</div><div class="rpt-box-body">${obs.attitude}</div></div>
+      </div>
+      ${c.memoObserve?`<div class="rpt-highlight" style="margin-top:12px"><div class="rpt-hl-label">상담 중 확인한 사항</div><div class="rpt-hl-body">${UI.e(c.memoObserve)}</div></div>`:''}
+    </div>
+    <div class="rpt-section">
+      ${(()=>{
+        // 감성 해석 블록 — 학습자 유형 또는 결손 기반 자동 생성
+        const emotionMap = {
+          st_nomotive:`${name} 학생에게 지금 가장 필요한 건 방법이 아니라 이유입니다. 공부를 왜 해야 하는지 스스로 납득되지 않은 상태에서는 어떤 방식도 오래가지 않아요. 리런하다는 그 이유부터 함께 찾아갑니다.`,
+          st_anxiety:`${name} 학생은 능력이 없는 게 아니에요. 반복된 실패 경험이 쌓이면서 '어차피 안 된다'는 감각이 먼저 앞서게 된 상태입니다. 그 감각을 먼저 다루어야 진짜 실력이 드러납니다.`,
+          st_dysregul:`${name} 학생이 공부를 안 하는 게 아니에요. 시작하고 멈추는 게 반복되는 건 의지 문제가 아니라 구조 문제입니다. 작동하는 루틴이 생기면 달라집니다.`,
+          st_rebuild:`${name} 학생이 지금 힘든 건 공부가 어려운 게 아니라, 쌓아야 할 기초가 비어있기 때문입니다. 빈 곳을 메우지 않고 계속 위로만 쌓으면 흔들릴 수밖에 없어요.`,
+          st_effort:`${name} 학생은 이미 열심히 하고 있어요. 문제는 방향이에요. 같은 노력을 올바른 방식으로 쏟으면 지금보다 훨씬 빠르게 성장할 수 있습니다.`,
+          st_plateau:`${name} 학생은 이미 일정 수준을 만들어냈어요. 지금 정체는 나빠지는 게 아니에요. 다음 단계로 가기 위한 전략이 바뀌어야 할 시점입니다.`,
+        };
+        const fallback = `${name} 학생의 학습 상태를 분석한 결과, 지금 필요한 것은 더 많은 문제풀이가 아니라 읽고 생각하는 방식의 재설계입니다. 리런하다는 그 구조부터 다시 세웁니다.`;
+        const emotionText = c.studyType ? (emotionMap[c.studyType] || fallback) : fallback;
+        return `<div class="rpt-highlight" style="margin-bottom:14px;background:var(--navy);border:none">
+          <div class="rpt-hl-label" style="color:rgba(255,255,255,.6)">학습 상태 해석</div>
+          <div class="rpt-hl-body" style="color:#fff;font-size:.88rem;line-height:1.95">${emotionText}</div>
+        </div>`;
+      })()}
+      <div class="rpt-section-title">2. 문제의 원인</div>
+      ${c.deficits?.length?`<div class="rpt-warning"><div class="rpt-hl-label">집중 보완이 필요한 영역</div><div class="rpt-hl-body"><div style="margin-bottom:6px">${UI.deficitTags(c.deficits)}</div>${interp.deficitDesc}</div></div>`:''}
+      <p style="font-size:.87rem;line-height:1.95;color:var(--text);margin-bottom:12px">${interp.main}</p>
+      ${conflict.items.length?`<div class="rpt-conflict-block"><div class="rpt-hl-label">함께 살펴볼 부분</div><ul class="rpt-conflict-list">${conflict.items.map(t=>`<li>${t}</li>`).join('')}</ul></div>`:''}
+      ${c.memoProblem?`<div class="rpt-highlight"><div class="rpt-hl-label">선생님이 파악한 핵심 문제</div><div class="rpt-hl-body">${UI.e(c.memoProblem)}</div></div>`:''}
+      <div class="rpt-grid-2" style="margin-top:12px">
+        <div class="rpt-box"><div class="rpt-box-title">보호자가 파악한 강점</div><div class="rpt-box-body">${UI.e(c.strength||'미기재')}</div></div>
+        <div class="rpt-box"><div class="rpt-box-title">보호자가 파악한 약점</div><div class="rpt-box-body">${UI.e(c.weakness||'미기재')}</div></div>
+        ${c.concern?`<div class="rpt-box" style="grid-column:1/-1"><div class="rpt-box-title">가장 해결하고 싶은 문제</div><div class="rpt-box-body">${UI.e(c.concern)}</div></div>`:''}
+      </div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">3. 재설계 방향</div>
+      ${c.memoDirection?`<div class="rpt-highlight"><div class="rpt-hl-label">선생님의 접근 방향</div><div class="rpt-hl-body">${UI.e(c.memoDirection)}</div></div>`:''}
+      <p style="font-size:.87rem;line-height:1.95;color:var(--text);margin-bottom:10px">${dir.main}</p>
+      ${goals.length?`<div style="margin-bottom:10px;padding:10px 14px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border-l)"><span style="font-size:.76rem;font-weight:700;color:var(--text-3)">이번 상담에서 설정한 목표:</span><span style="margin-left:8px">${goals.map(g=>`<span class="badge badge-blue">${g}</span>`).join(' ')}</span></div>`:''}
+      ${studyTypeLabel?`<p style="font-size:.84rem;color:var(--text-2);margin-bottom:6px">현재 학습 상태 유형: <strong>${studyTypeLabel}</strong></p>`:''}
+      ${parentTypeLabel?`<p style="font-size:.84rem;color:var(--text-2);margin-bottom:12px">보호자 기대 유형: <strong>${parentTypeLabel}</strong></p>`:''}
+    </div>
+    ${c.tier?`<div class="rpt-section">
+      <div class="rpt-section-title">4. 리런 추천 수업 구조</div>
+      ${(()=>{
+        const tc={T1:{core:'Re:논리독해 — 기초독해',badge:'badge-navy',modules:['독서(비문학) — 정보 수용·기초 독해 훈련','문학 — 감정·흐름 이해 기초 독해 훈련','어휘 — 문장 기반 한자어휘 학습']},T2:{core:'Re:논리사고 — 구조독해',badge:'badge-blue',modules:['독서(비문학) — 글의 구조 파악·추론 독해 훈련','문학 — 표현법·소재 통한 감정-의도 추론 훈련','어휘 — 독해 기반 교과어휘 학습']},T3:{core:'Re:논리판단 — 추론독해',badge:'badge-purple',modules:['독서(비문학) — 숨겨진 의도·정보 추리 독해 훈련','문학 — 함축 의미·배경 유추 독해 훈련','논리추론 — 보이지 않는 조건과 근거 추론 훈련']},T4:{core:'Re:논리판단 심화 — 비평독해',badge:'badge-accent',modules:['독서(비문학) — 의도·논리 추적·스키마 분석 비평 독해','문학 — <보기>·스키마 활용 비평 독해 훈련','언매 — 문법 구조와 원리 기준 형성']},T5:{core:'Re:메타독해 — 실전 완성',badge:'badge-green',modules:['독서(비문학) — 고난도·신유형 정확 풀이 훈련','문학 — 고난도·복합유형 정확 풀이 훈련','언매 — 수능 문법 실수 없이 맞추는 훈련']}};
+        const t=tc[c.tier];if(!t)return '';
+        return `<div class="rpt-highlight" style="margin-bottom:12px"><div class="rpt-hl-label">권장 수업 과정</div><div class="rpt-hl-body"><span class="badge ${t.badge}" style="font-size:.85rem;margin-bottom:8px;display:inline-block">${t.core}</span><ol style="margin:0;padding-left:18px">${t.modules.map(m=>`<li style="font-size:.85rem;line-height:1.9;color:var(--text)">${m}</li>`).join('')}</ol></div></div>`;
+      })()}
+    </div>`:''}
+    <div class="rpt-section">
+      <div class="rpt-section-title">${c.tier?'5':'4'}. 실행 전략</div>
+      ${hasMemoProcess?`<div class="rpt-highlight"><div class="rpt-hl-label">선생님이 준비한 단계별 계획</div><div class="rpt-hl-body">${UI.e(c.memoProcess)}</div></div>`:''} 
+      ${plans.length?`<div class="rpt-plan" style="${hasMemoProcess?'margin-top:14px':''}">${plans.map((p,i)=>`<div class="rpt-plan-item"><div class="rpt-plan-num">${i+1}</div><div class="rpt-plan-content"><h5>${p.title}</h5><p>${p.desc}</p></div></div>`).join('')}</div>`:''}
+    </div>
+    ${c.diagComment||c.extra?`<div class="rpt-section"><div class="rpt-section-title">${c.tier?'6':'5'}. 선생님 소견 및 기타</div>${c.diagComment?`<div class="rpt-highlight"><div class="rpt-hl-label">종합 소견</div><div class="rpt-hl-body">${UI.e(c.diagComment)}</div></div>`:''}${c.extra?`<div class="rpt-box" style="margin-top:8px"><div class="rpt-box-title">특이사항 / 추가 전달 사항</div><div class="rpt-box-body">${UI.e(c.extra)}</div></div>`:''}</div>`:''}
+    <div class="rpt-section" style="background:var(--navy);border-radius:var(--r-lg);padding:22px 24px;margin-bottom:20px">
+      <div style="font-family:'Noto Serif KR',serif;font-size:.95rem;font-weight:700;color:#fff;margin-bottom:14px">다음 단계</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.08);border-radius:var(--r)">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</span>
+          <div><div style="font-size:.88rem;font-weight:700;color:#fff">원데이 진단 수업 진행</div><div style="font-size:.79rem;color:rgba(255,255,255,.6);margin-top:2px">실제 수업을 경험하며 현재 상태를 함께 확인합니다.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.08);border-radius:var(--r)">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</span>
+          <div><div style="font-size:.88rem;font-weight:700;color:#fff">맞춤 커리큘럼 설계</div><div style="font-size:.79rem;color:rgba(255,255,255,.6);margin-top:2px">진단 결과를 바탕으로 ${name} 학생에게 맞는 수업 구조를 확정합니다.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.08);border-radius:var(--r)">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</span>
+          <div><div style="font-size:.88rem;font-weight:700;color:#fff">정규 수업 시작</div><div style="font-size:.79rem;color:rgba(255,255,255,.6);margin-top:2px">리런관리와 함께 매주 변화를 추적하며 지도합니다.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rpt-sign">
+      <div>본 리포트는 상담 내용을 바탕으로 작성되었습니다. &nbsp;— 리런하다 국어</div>
+      <div style="display:flex;gap:40px;align-items:flex-end">
+        <span>담당 선생님: <strong>${UI.e(cnslr)}</strong></span>
+        <span>서명: <span style="display:inline-block;width:120px;border-bottom:1px solid var(--border);margin-left:4px">&nbsp;</span></span>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--text-4);line-height:1.7;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-l)">
+      ※ 본 리포트는 1차 상담 내용을 기반으로 작성되었으며, 정밀 진단 진행 후 일부 내용이 조정될 수 있습니다.
+    </div>
+    </div></div>`;
   }
   function _conflict(s,c,name){
     const items = [];
@@ -2196,78 +2712,156 @@ const ReportUI = (() => {
     return { items };
   }
   function _hrs(str){if(!str)return 0;const m=String(str).match(/[\d.]+/);return m?parseFloat(m[0]):0;}
-  function _obs(s,c,name){const si=parseInt(c.studyInterest)||3,ki=parseInt(c.koreanInterest)||3;const score=[c.schoolScore?`${name}의 학교 시험 성적은 ${c.schoolScore}입니다.`:'',c.mockScore?`모의고사는 ${c.mockScore}입니다.`:'',c.targetScore?`목표 성적은 ${c.targetScore}입니다.`:'',c.studyHours?`하루 평균 ${c.studyHours} 공부합니다.`:''].filter(Boolean).join(' ')||'성적 정보 없음';const env=[c.studyPlace?`공부 장소는 ${c.studyPlace}입니다.`:'',c.studyMgmt?`학습 관리는 "${c.studyMgmt}"입니다.`:'',c.smartphone?`스마트폰은 "${c.smartphone}"입니다.`:'',c.reading?`독서 습관은 ${c.reading}입니다.`:''].filter(Boolean).join(' ')||'학습 환경 정보 없음';const life=[c.wakeTime&&c.sleepTime?`기상 ${c.wakeTime}, 취침 ${c.sleepTime}입니다.`:'',c.hobbyHours?`하루 ${c.hobbyHours}을 여가에 씁니다.`:'',c.academyCount?`${c.academyCount} 학원 병행 중입니다.`:''].filter(Boolean).join(' ')||'생활 패턴 정보 없음';const siL=si<=1?'매우 낮음':si===2?'낮음':si===3?'보통':si===4?'높음':'매우 높음',kiL=ki<=1?'매우 낮음':ki===2?'낮음':ki===3?'보통':ki===4?'높음':'매우 높음';const attitude=`공부 흥미도 ${si}/5(${siL}), 국어 흥미도 ${ki}/5(${kiL})입니다.`+(c.readingMethod?` 독해: "${c.readingMethod}".`:'');return{score,env,life,attitude};}
-  function _interp(s,c,name){const ki=parseInt(c.koreanInterest)||3,parts=[];const tm={T1:`${name}은(는) T1 진단으로 독해 기초 토대가 없는 상태입니다.`,T2:`${name}은(는) T2 수준으로 구조·추론 파악에 어려움이 있습니다.`,T3:`${name}은(는) T3 수준으로 고난도 추론이 미흡합니다.`,T4:`${name}은(는) T4 수준으로 최상위 유형에서 성장 여지가 있습니다.`,T5:`${name}은(는) T5 최상위로 실전 전략 고도화에 집중합니다.`};if(c.tier&&tm[c.tier])parts.push(tm[c.tier]);if(ki<=2)parts.push(`국어 흥미가 낮아 심리적 장벽이 있을 수 있습니다.`);const dm={vocab:'어휘 부족이 독해 기초를 약화하고 있을 수 있습니다.',sentence:'복합 문장 해석 능력 보강이 필요합니다.',structure:'문단 구조 파악 훈련이 권장됩니다.',connect:'정보 통합 능력이 부족한 것으로 추정됩니다.',infer:'추론 능력 집중 훈련이 필요합니다.',critical:'비판적 읽기 훈련이 권장됩니다.'};const deficitDesc=(c.deficits||[]).map(d=>dm[d]||'').filter(Boolean).join(' ');return{main:parts.join('\n\n')||`${name}의 추가 진단이 진행될 예정입니다.`,deficitDesc};}
-  function _dir(s,c,name,goals){const ki=parseInt(c.koreanInterest)||3,parts=[];if(ki<=2)parts.push(`${name}에게 먼저 흥미와 자신감 회복을 최우선으로 합니다.`);const dm={T1:`어휘→문장→구조 순서로 ${name}의 기초를 구축합니다.`,T2:`${name}이(가) 구조·흐름 파악 능력을 갖출 수 있도록 집중합니다.`,T3:`${name}을(를) 위해 고난도 추론·비판적 사고 전략을 훈련합니다.`,T4:`${name}의 시험 전략과 취약 유형을 최적화합니다.`,T5:`${name}의 최상위 역량을 실전에서 발휘하도록 합니다.`};if(c.tier&&dm[c.tier])parts.push(dm[c.tier]);if(goals.includes('학습 습관 및 루틴 형성'))parts.push(`${name}을(를) 위한 일일 루틴을 설계하고 주간 점검합니다.`);return{main:parts.join('\n\n')||`${name}의 맞춤형 방향을 설정합니다.`};}
+
+  // ── 관찰 박스 데이터 생성 ──
+  function _obs(s,c,name){
+    const si=parseInt(c.studyInterest)||3, ki=parseInt(c.koreanInterest)||3;
+
+    // 학습관리 코드 → 자연어
+    const mgmtLabel={sm_full:'스스로 계획하고 실행하는 편',sm_partial:'방향은 있지만 실행이 불규칙한 편',sm_parent:'보호자 주도로 관리되고 있는 편',sm_academy:'학원 없이는 움직이기 어려운 편',sm_avoidant:'공부 자체를 기피하는 경향이 있음'};
+    const spLabel={sp_control:'스스로 조절 가능한 편',sp_partial:'규칙은 있지만 잘 지키지 못하는 편',sp_overuse:'학습을 방해할 수준으로 과의존',sp_addict:'일상까지 영향을 줄 만큼 과몰입'};
+    const rdLabel={rd_none:'거의 읽지 않음',rd_rare:'가끔 읽는 편 (월 1권 미만)',rd_moderate:'보통 읽는 편 (월 1~2권)',rd_habit:'꾸준히 읽는 편 (월 3권 이상)'};
+
+    // 성적현황 — 자연스러운 서술문
+    const scoreParts = [];
+    if(c.schoolScore) scoreParts.push(`${name} 학생의 학교 시험 성적은 ${c.schoolScore}입니다.`);
+    if(c.mockScore)   scoreParts.push(`모의고사는 ${c.mockScore}입니다.`);
+    if(c.targetScore) scoreParts.push(`목표 성적은 ${c.targetScore}입니다.`);
+    if(c.studyHours)  scoreParts.push(`하루 평균 ${c.studyHours}를 공부에 쓰고 있습니다.`);
+    const score = scoreParts.join(' ') || '아직 성적 정보가 입력되지 않았습니다.';
+
+    const env = [
+      c.studyPlace  ? `주로 ${c.studyPlace}에서 공부합니다.` : '',
+      c.studyMgmt && mgmtLabel[c.studyMgmt] ? `학습 관리는 ${mgmtLabel[c.studyMgmt]}.` : '',
+      c.smartphone && spLabel[c.smartphone]  ? `기기 사용은 ${spLabel[c.smartphone]}.` : '',
+      c.reading    && rdLabel[c.reading]     ? `독서 습관은 ${rdLabel[c.reading]}.` : '',
+    ].filter(Boolean).join(' ') || '학습 환경 정보 없음';
+
+    // 생활패턴 — 자연스러운 서술문
+    const lifeParts = [];
+    if(c.wakeTime && c.sleepTime) lifeParts.push(`${c.wakeTime}에 일어나 ${c.sleepTime}에 잠듭니다.`);
+    if(c.hobbyHours)  lifeParts.push(`하루 ${c.hobbyHours}을 여가·미디어에 사용합니다.`);
+    if(c.academyCount) lifeParts.push(`현재 ${c.academyCount} 학원을 병행하고 있습니다.`);
+    const life = lifeParts.join(' ') || '생활 패턴 정보 없음';
+
+    const siL = si<=1?'매우 낮음':si===2?'낮음':si===3?'보통':si===4?'높음':'매우 높음';
+    const kiL = ki<=1?'매우 낮음':ki===2?'낮음':ki===3?'보통':ki===4?'높음':'매우 높음';
+    const attitude = `공부 전반에 대한 흥미 ${si}/5(${siL}), 국어에 대한 흥미 ${ki}/5(${kiL}).` +
+      (c.readingMethod ? ` 지문 읽기 방식은 "${c.readingMethod.split('—')[0].trim()}" 스타일.` : '');
+
+    return {score, env, life, attitude};
+  }
+
+  // ── 문제 해석 ──
+  function _interp(s,c,name){
+    const ki=parseInt(c.koreanInterest)||3, parts=[];
+    const tm={
+      T1:`${name} 학생의 독해 역량 진단 결과, 어휘와 문장 단위 이해부터 흔들리고 있는 상태입니다. 글을 읽어도 내용이 머릿속에 남지 않거나, 질문의 의도 자체를 파악하기 어려워하는 경우가 많습니다.`,
+      T2:`${name} 학생은 단순 사실 확인은 어느 정도 가능하지만, 글의 흐름을 잡거나 글쓴이의 의도를 추론하는 단계에서 자주 막힙니다. 기초는 있으나 적용으로 이어지지 않는 상태입니다.`,
+      T3:`${name} 학생은 평소 지문을 읽는 것 자체는 가능하지만, 복잡한 구조의 고난도 지문이나 추론 요구가 높은 문항 앞에서 한계가 드러납니다. 중급 독해는 되지만 아직 상위권 유형에는 준비가 더 필요합니다.`,
+      T4:`${name} 학생은 논리적 독해가 가능한 수준입니다. 다만 최상위 유형—깊은 함의 파악이나 관점 비교 문항—에서 아직 실수가 남아 있습니다. 전략적 정교함이 필요한 단계입니다.`,
+      T5:`${name} 학생은 비판적·창의적 독해까지 완성된 최상위 수준입니다. 지금은 역량 유지와 실전 최적화, 그리고 흔들리지 않는 루틴 확립에 집중합니다.`,
+    };
+    if(c.tier && tm[c.tier]) parts.push(tm[c.tier]);
+    if(ki<=2) parts.push(`국어에 대한 흥미가 낮은 것도 주목할 부분입니다. 실력 문제만이 아니라 심리적 거리감이 먼저 해소되어야 실질적인 변화가 일어납니다.`);
+
+    const dm={
+      vocab:'어휘와 배경지식이 부족해 지문을 읽어도 내용이 낯선 경우가 많습니다.',
+      sentence:'복합 문장이나 함축된 표현에서 뜻을 제대로 연결하지 못하는 패턴이 보입니다.',
+      structure:'글의 전개 방식이나 단락 간 논리 흐름을 잡는 데 어려움이 있습니다.',
+      connect:'여러 정보를 연결하거나 핵심을 선별하는 능력이 아직 약합니다.',
+      infer:'맥락에서 추론하는 능력이 부족해 직접 서술되지 않은 내용 앞에서 자주 막힙니다.',
+      critical:'필자의 관점을 평가하거나 논거의 타당성을 따지는 비판적 읽기가 아직 훈련되지 않았습니다.',
+    };
+    const deficitDesc=(c.deficits||[]).map(d=>dm[d]||'').filter(Boolean).join(' ');
+    return{main:parts.join('\n\n')||`${name} 학생의 독해 역량에 대한 상세 진단이 진행될 예정입니다.`, deficitDesc};
+  }
+
+  // ── 지도 방향 ──
+  function _dir(s,c,name,goals){
+    const ki=parseInt(c.koreanInterest)||3, parts=[];
+    if(ki<=2) parts.push(`${name} 학생에게 지금 당장 필요한 것은 국어에 대한 심리적 거리감을 줄이는 것입니다. 어렵다는 감각이 앞서면 어떤 방법도 스며들기 어렵기 때문에, 작은 성공 경험을 통해 흥미의 문을 먼저 열어가겠습니다.`);
+    const dm={
+      T1:`어휘→문장→구조의 순서로, ${name} 학생이 국어 지문을 읽는 것이 더 이상 막막하지 않도록 독해의 기초 체력부터 다져갑니다.`,
+      T2:`${name} 학생이 글을 읽고 나서 "이 글이 무슨 말을 하는지 알겠다"는 감각을 가질 수 있도록, 구조 파악과 흐름 읽기에 집중합니다.`,
+      T3:`${name} 학생이 고난도 지문 앞에서 포기하지 않도록, 추론과 비판적 사고 전략을 체계적으로 훈련합니다.`,
+      T4:`${name} 학생이 이미 가진 독해 실력을 실전에서 온전히 발휘할 수 있도록, 전략과 판단 정확도를 끌어올립니다.`,
+      T5:`${name} 학생의 최상위 독해 역량이 흔들리지 않도록 실전 루틴과 자기조절 전략을 정교화합니다.`,
+    };
+    if(c.tier && dm[c.tier]) parts.push(dm[c.tier]);
+    if(goals.includes('학습 습관 및 루틴 형성')) parts.push(`학습 루틴을 갖추는 것도 이번 지도의 핵심 목표 중 하나입니다. ${name} 학생의 생활 흐름을 고려한 현실적인 루틴을 함께 설계하고, 실행을 주간 단위로 점검하겠습니다.`);
+    return{main:parts.join('\n\n')||`${name} 학생의 상태에 맞는 맞춤 지도 방향을 상담을 통해 구체화해 나가겠습니다.`};
+  }
+
+  // ── 학습 계획 (강사 메모 있으면 자동 계획 보조 처리) ──
   function _plans(s,c,name,goals){
     const ki = parseInt(c.koreanInterest) || 3;
     const plans = [];
     const t = c.tier || '';
+    // 강사가 직접 추진계획을 작성한 경우, 자동 계획은 보조 항목만 추가
+    const hasMemoProcess = !!(c.memoProcess && c.memoProcess.trim());
 
-    if (['T1','T2'].includes(t)) {
-      plans.push({
-        title: '기초 어휘·문장 해석 훈련',
-        desc: `핵심 어휘와 문장 해석 훈련을 통해 ${name}의 독해 기반을 다시 세웁니다.`
-      });
-    }
-    if (['T2','T3'].includes(t)) {
-      plans.push({
-        title: '비문학 구조 파악 훈련',
-        desc: `문단 전개 방식과 중심문장 추출 훈련을 통해 ${name}이 글의 구조를 잡도록 합니다.`
-      });
-    }
-    if (['T3','T4'].includes(t)) {
-      plans.push({
-        title: '추론·비판적 읽기 강화',
-        desc: `전제, 함의, 관점 비교를 다루며 ${name}의 고난도 독해 대응력을 높입니다.`
-      });
-    }
-    if (['T4','T5'].includes(t)) {
-      plans.push({
-        title: '실전 전략 최적화',
-        desc: `시간 배분, 선지 판단, 취약 패턴 교정을 통해 ${name}의 실전 효율을 높입니다.`
-      });
-    }
-
-    // studyMgmt 실제 저장값과 매칭 + goals 텍스트 실제 체크박스 값과 매칭
-    if (
-      goals.includes('학습 습관 및 루틴 형성') ||
-      ['sm_parent', 'sm_academy', 'sm_avoidant'].includes(c.studyMgmt)
-    ) {
-      plans.push({
-        title: '학습 루틴 설계',
-        desc: `${name}의 생활 흐름에 맞춘 일일·주간 루틴을 설계하고 실행 점검 체계를 붙입니다.`
-      });
-    }
-
-    if (goals.includes('독해력 및 사고력 향상') || (c.deficits || []).includes('infer')) {
-      plans.push({
-        title: '독해력 집중 강화',
-        desc: `다양한 텍스트를 활용해 ${name}의 독해 정확도와 정보 연결 능력을 단계적으로 강화합니다.`
-      });
+    if (!hasMemoProcess) {
+      if (['T1','T2'].includes(t)) {
+        plans.push({
+          title: '기초 어휘·문장 해석 훈련',
+          desc: `${name} 학생이 지문을 읽을 때 가장 먼저 막히는 지점인 어휘와 문장 해석부터 집중적으로 다집니다.`
+        });
+      }
+      if (['T2','T3'].includes(t)) {
+        plans.push({
+          title: '글 구조 파악 훈련',
+          desc: `문단의 전개 방식과 핵심 문장 찾기를 반복 훈련해, ${name} 학생이 글 전체를 조감할 수 있는 눈을 기릅니다.`
+        });
+      }
+      if (['T3','T4'].includes(t)) {
+        plans.push({
+          title: '추론·비판적 읽기 강화',
+          desc: `직접 서술되지 않은 내용을 맥락에서 읽어내는 능력을 훈련해, ${name} 학생이 고난도 문항에서도 흔들리지 않도록 합니다.`
+        });
+      }
+      if (['T4','T5'].includes(t)) {
+        plans.push({
+          title: '실전 전략 정교화',
+          desc: `${name} 학생이 이미 가진 독해력을 시험장에서 온전히 꺼낼 수 있도록, 시간 배분·선지 판단·취약 패턴 교정을 집중합니다.`
+        });
+      }
+      if (goals.includes('독해력 및 사고력 향상') || (c.deficits || []).includes('infer')) {
+        plans.push({
+          title: '독해력 집중 강화',
+          desc: `다양한 장르의 지문을 활용해 ${name} 학생의 독해 정확도와 정보 연결 능력을 단계적으로 높여갑니다.`
+        });
+      }
     }
 
+    // 루틴·자기주도는 강사 메모 유무와 무관하게 필요 시 추가
+    if (goals.includes('학습 습관 및 루틴 형성') || ['sm_parent','sm_academy','sm_avoidant'].includes(c.studyMgmt)) {
+      plans.push({
+        title: '학습 루틴 설계 및 점검',
+        desc: `${name} 학생의 생활 패턴에 맞는 현실적인 일일·주간 루틴을 설계하고, 매 수업마다 실행 여부를 함께 확인합니다.`
+      });
+    }
     if (goals.includes('자기주도 학습 역량 강화') || ki <= 2) {
       plans.push({
-        title: '동기 및 자기주도성 강화',
-        desc: `작은 성취 기준과 피드백 구조를 통해 ${name}의 학습 지속성과 자기조절 능력을 강화합니다.`
+        title: '자기주도 학습 동기 형성',
+        desc: `작지만 달성 가능한 목표를 설정하고 성취 경험을 쌓아가며, ${name} 학생 스스로 공부를 이어갈 수 있는 힘을 키웁니다.`
       });
     }
 
     if (!plans.length) {
       plans.push({
-        title: '개인 맞춤 로드맵 실행',
-        desc: `${name}의 상담 결과를 기반으로 우선순위 중심 커리큘럼을 적용합니다.`
+        title: '개인 맞춤 로드맵 수립',
+        desc: `이번 상담에서 파악된 ${name} 학생의 현재 상태를 기반으로, 우선순위를 명확히 한 커리큘럼을 적용합니다.`
       });
       plans.push({
-        title: '정기 피드백 제공',
-        desc: `학습 변화와 진행 상황을 정기적으로 점검하고 보호자와 공유합니다.`
+        title: '정기 피드백 및 보호자 공유',
+        desc: `${name} 학생의 변화와 진척 상황을 수업마다 기록하고, 주기적으로 보호자와 공유해 가정과 학원이 같은 방향을 보도록 합니다.`
       });
     }
-
     return plans;
   }
-  function _tierInfo(t){const m={T1:{desc:'독해 기반 없음. 어휘·문장 해석부터 시작합니다.'},T2:{desc:'단순 사실 파악 가능. 구조·추론이 부족합니다.'},T3:{desc:'기본 독해 가능. 고난도 지문에서 한계가 있습니다.'},T4:{desc:'논리적 독해 가능. 최상위 유형에서 성장 여지가 있습니다.'},T5:{desc:'비판적 추론까지 완성된 최상위 수준입니다.'}};return m[t]||{desc:'진단 예정입니다.'};}
+
+  function _tierInfo(t){const m={T1:{desc:'어휘와 문장 이해부터 흔들리는 상태입니다. 기초 체력을 다시 세우는 것이 먼저입니다.'},T2:{desc:'단순 사실 확인은 가능하지만 구조·추론 앞에서 자주 막힙니다.'},T3:{desc:'평균 수준의 독해는 가능합니다. 고난도 지문에서의 한계를 극복하는 것이 다음 과제입니다.'},T4:{desc:'논리적 독해가 가능합니다. 최상위 유형에서 정확도를 더 높이는 것이 목표입니다.'},T5:{desc:'비판적·창의적 독해까지 완성된 최상위 수준입니다.'}};return m[t]||{desc:'진단이 예정되어 있습니다.'};}
   return{openForCurrentStudent,openForStudentId,populateStudentSelect:_populate,onStudentChange,generate};
 })();
 
@@ -2372,12 +2966,15 @@ const App = (() => {
     UI.innerText('sidebarUser',user?.email||'오프라인 모드');
     UI.sv('sf_firstDate',_today());UI.sv('cf_date',_today());UI.sv('fu_dueDate',_today());
     ['counselingViewModal','followupModal','configModal'].forEach(id=>{document.getElementById(id)?.addEventListener('click',e=>{if(e.target.id===id)UI.closeModal(id);});});
-    // Migration 알림
+    // Migration 알림 — 브라우저 confirm 대신 인라인 배너로 표시
     if(Migration.hasV5Data()&&!Auth.isOffline()){
       setTimeout(()=>{
-        if(confirm('이전 버전(v5) 로컬 데이터가 감지되었습니다.\nSupabase로 마이그레이션하시겠습니까?'))
-          Migration.migrate();
-      },1000);
+        const banner = document.createElement('div');
+        banner.id = 'migrationBanner';
+        banner.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:300;background:var(--amber);color:#fff;padding:12px 20px;border-radius:var(--r);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:12px;font-size:.85rem;max-width:520px;width:calc(100% - 32px)';
+        banner.innerHTML = `<span style="flex:1">이전 버전(v5) 로컬 데이터가 있습니다. Supabase로 가져올까요?</span><button onclick="Migration.migrate();document.getElementById('migrationBanner')?.remove()" style="background:#fff;color:var(--amber);border:none;padding:6px 13px;border-radius:5px;font-weight:700;cursor:pointer;font-size:.82rem;white-space:nowrap">가져오기</button><button onclick="document.getElementById('migrationBanner')?.remove()" style="background:rgba(0,0,0,.15);color:#fff;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:.82rem">나중에</button>`;
+        document.body.appendChild(banner);
+      },800);
     }
     // 오프라인 모드에서 v5 데이터 fallback
     // v6 캐시가 이미 있으면 덮어쓰지 않음 — 의도치 않은 구버전 복원 방지
